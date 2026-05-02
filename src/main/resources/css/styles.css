@@ -1,0 +1,24 @@
+.root {
+    -fx-background-color: #1e1e2f;
+}
+
+/* заголовок */
+.text {
+    -fx-fill: white;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+/* кнопки */
+.button {
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-background-radius: 10;
+    -fx-padding: 10 20 10 20;
+}
+
+/* hover эффект */
+.button:hover {
+    -fx-background-color: #2563eb;
+}
