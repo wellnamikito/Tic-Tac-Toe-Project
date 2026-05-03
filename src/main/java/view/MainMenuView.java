@@ -1,24 +1,33 @@
 package view;
 
 import controller.MainMenuController;
+import config.UIConfig;
 import javafx.scene.Scene;
+import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.transform.Scale;
 import javafx.stage.Stage;
+import view.panels.RulesPanel;
+import view.panels.SettingsPanel;
+import view.panels.ShopPanel;
 
 public class MainMenuView {
 
-    private static final double BASE_WIDTH = 1920;
-    private static final double BASE_HEIGHT = 1080;
+    private Group scaleContainer;
+    private AnchorPane rightPanelContainer;
+    private String openedPanel = "";
 
     public Scene createScene(Stage stage) {
 
         MainMenuController controller = new MainMenuController(stage);
 
+        // =========================
+        // ROOT
+        // =========================
         StackPane root = new StackPane();
 
         // =========================
@@ -33,30 +42,19 @@ public class MainMenuView {
         bg.fitHeightProperty().bind(stage.heightProperty());
 
         // =========================
-        // UI ROOT
+        // UI (1920x1080 виртуальный экран)
         // =========================
         AnchorPane ui = new AnchorPane();
-        ui.setPrefSize(BASE_WIDTH, BASE_HEIGHT);
+        ui.setPrefSize(UIConfig.BASE_WIDTH, UIConfig.BASE_HEIGHT);
 
         // =========================
-        // SCALE (ВАЖНО: MIN, НЕ MAX)
-        // =========================
-        Scale scale = new Scale();
-        ui.getTransforms().add(scale);
-
-        // обновление масштаба
-        stage.widthProperty().addListener((obs, o, n) -> update(stage, ui, scale));
-        stage.heightProperty().addListener((obs, o, n) -> update(stage, ui, scale));
-
-        // =========================
-        // PANEL (ПРИКРЕПЛЕНА СЛЕВА/СВЕРХУ)
+        // LEFT PANEL
         // =========================
         ImageView panel = new ImageView(
                 new Image(getClass().getResource("/images/menu_panel.png").toExternalForm())
         );
-        panel.setFitWidth(500);
-        panel.setPreserveRatio(true);
 
+        panel.setFitWidth(500);
         panel.setLayoutX(0);
         panel.setLayoutY(0);
 
@@ -66,9 +64,8 @@ public class MainMenuView {
         ImageView logo = new ImageView(
                 new Image(getClass().getResource("/images/logo.png").toExternalForm())
         );
-        logo.setFitWidth(513);
-        logo.setPreserveRatio(true);
 
+        logo.setFitWidth(513);
         logo.setLayoutX(-7);
         logo.setLayoutY(0);
 
@@ -92,54 +89,119 @@ public class MainMenuView {
         settings.setLayoutX(55);
         settings.setLayoutY(770);
 
-        play.setOnAction(e -> controller.onPlay());
-        shop.setOnAction(e -> controller.onShop());
-        rules.setOnAction(e -> controller.onRules());
-        settings.setOnAction(e -> controller.onSettings());
-
         addHover(play);
         addHover(shop);
         addHover(rules);
         addHover(settings);
 
         // =========================
-        // ADD UI
+        // RIGHT PANEL
         // =========================
-        ui.getChildren().addAll(panel, logo, play, shop, rules, settings);
+        rightPanelContainer = new AnchorPane();
 
-        root.getChildren().addAll(bg, ui);
+        rightPanelContainer.setLayoutX(1200);
+        rightPanelContainer.setLayoutY(150);
+        rightPanelContainer.setPrefSize(650, 800);
 
-        Scene scene = new Scene(root, BASE_WIDTH, BASE_HEIGHT);
+        // =========================
+        // ACTIONS
+        // =========================
+        play.setOnAction(e -> controller.onPlay());
 
-        update(stage, ui, scale);
+        settings.setOnAction(e ->
+                togglePanel(new SettingsPanel(), "settings", settings, rules, shop)
+        );
+
+        rules.setOnAction(e ->
+                togglePanel(new RulesPanel(), "rules", rules, settings, shop)
+        );
+
+        shop.setOnAction(e ->
+                togglePanel(new ShopPanel(), "shop", shop, settings, rules)
+        );
+
+        // =========================
+        // ADD UI ELEMENTS
+        // =========================
+        ui.getChildren().addAll(
+                panel,
+                logo,
+                play,
+                shop,
+                rules,
+                settings,
+                rightPanelContainer
+        );
+
+        // =========================
+        // SCALE CONTAINER
+        // =========================
+        scaleContainer = new Group(ui);
+
+        root.getChildren().addAll(bg, scaleContainer);
+
+        Scene scene = new Scene(root, UIConfig.BASE_WIDTH, UIConfig.BASE_HEIGHT);
+
+        bindScaling(scene);
 
         return scene;
     }
 
     // =========================
-    // SCALE SYSTEM (ПРАВИЛЬНЫЙ)
+    // SCALING
     // =========================
-    private void update(Stage stage, AnchorPane ui, Scale scale) {
+    private void bindScaling(Scene scene) {
 
-        double scaleX = stage.getWidth() / BASE_WIDTH;
-        double scaleY = stage.getHeight() / BASE_HEIGHT;
+        scene.widthProperty().addListener((obs, oldVal, newVal) -> updateScale(scene));
+        scene.heightProperty().addListener((obs, oldVal, newVal) -> updateScale(scene));
 
-        // 🔥 ВАЖНО: MIN, как в играх (не вылезает за экран)
-        double s = Math.min(scaleX, scaleY);
+        updateScale(scene);
+    }
 
-        scale.setX(s);
-        scale.setY(s);
+    private void updateScale(Scene scene) {
 
-        double realW = BASE_WIDTH * s;
-        double realH = BASE_HEIGHT * s;
+        double scaleX = scene.getWidth() / UIConfig.BASE_WIDTH;
+        double scaleY = scene.getHeight() / UIConfig.BASE_HEIGHT;
 
-        // центрируем ВСЕГДА
-        ui.setLayoutX((stage.getWidth() - realW) / 2);
-        ui.setLayoutY((stage.getHeight() - realH) / 2);
+        double scale = Math.min(scaleX, scaleY);
+
+        scaleContainer.setScaleX(scale);
+        scaleContainer.setScaleY(scale);
     }
 
     // =========================
-    // BUTTON
+    // PANEL TOGGLE
+    // =========================
+    private void togglePanel(Node panel, String name, Button active, Button... others) {
+
+        if (openedPanel.equals(name)) {
+
+            hidePanel();
+            openedPanel = "";
+            active.setStyle("-fx-background-color: transparent;");
+            return;
+        }
+
+        showPanel(panel);
+        openedPanel = name;
+
+        active.setStyle("-fx-background-color: rgba(255,255,255,0.25);");
+
+        for (Button b : others) {
+            b.setStyle("-fx-background-color: transparent;");
+        }
+    }
+
+    private void showPanel(Node panel) {
+        rightPanelContainer.getChildren().setAll(panel);
+    }
+
+    private void hidePanel() {
+        rightPanelContainer.getChildren().clear();
+    }
+
+    // =========================
+    // BUTTON FACTORY
     // =========================
     private Button createButton(String path) {
 
@@ -152,20 +214,27 @@ public class MainMenuView {
 
         Button b = new Button("", img);
         b.setStyle("-fx-background-color: transparent;");
+
         return b;
     }
 
     // =========================
-    // HOVER
+    // HOVER EFFECT
     // =========================
     private void addHover(Button b) {
+
         b.setOnMouseEntered(e -> {
+
             b.setScaleX(1.05);
             b.setScaleY(1.05);
+
         });
+
         b.setOnMouseExited(e -> {
+
             b.setScaleX(1);
             b.setScaleY(1);
+
         });
     }
 }
