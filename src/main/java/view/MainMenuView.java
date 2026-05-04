@@ -11,6 +11,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import manager.AudioManager;
 import view.panels.RulesPanel;
 import view.panels.SettingsPanel;
 import view.panels.ShopPanel;
@@ -99,8 +100,8 @@ public class MainMenuView {
         // =========================
         rightPanelContainer = new AnchorPane();
 
-        rightPanelContainer.setLayoutX(1200);
-        rightPanelContainer.setLayoutY(150);
+        rightPanelContainer.setLayoutX(0);
+        rightPanelContainer.setLayoutY(0);
         rightPanelContainer.setPrefSize(650, 800);
 
         // =========================
@@ -143,7 +144,7 @@ public class MainMenuView {
         Scene scene = new Scene(root, UIConfig.BASE_WIDTH, UIConfig.BASE_HEIGHT);
 
         bindScaling(scene);
-
+        AudioManager.playMusic("src/main/resources/audio/fff.mp3");
         return scene;
     }
 
@@ -193,6 +194,10 @@ public class MainMenuView {
     }
 
     private void showPanel(Node panel) {
+
+        panel.setLayoutX(530);
+        panel.setLayoutY(24);
+
         rightPanelContainer.getChildren().setAll(panel);
     }
 

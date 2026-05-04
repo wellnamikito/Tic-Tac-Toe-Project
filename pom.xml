@@ -11,16 +11,27 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <javafx.version>21</javafx.version>
+
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+
+        <!-- единая версия JavaFX -->
+        <javafx.version>21.0.4</javafx.version>
     </properties>
 
     <dependencies>
 
+        <!-- CORE UI -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+
+        <!-- MEDIA (ОБЯЗАТЕЛЬНО ДЛЯ AUDIO) -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-media</artifactId>
             <version>${javafx.version}</version>
         </dependency>
 
@@ -29,6 +40,7 @@
     <build>
         <plugins>
 
+            <!-- JavaFX RUNNER -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -36,12 +48,8 @@
 
                 <configuration>
                     <mainClass>app.Main</mainClass>
-
-                    <options>
-                        <option>-Dfile.encoding=UTF-8</option>
-                    </options>
-
                 </configuration>
+
             </plugin>
 
         </plugins>

@@ -5,6 +5,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import manager.ScreenManager;
 import view.MainMenuView;
 
 public class Main extends Application {
@@ -23,6 +24,10 @@ public class Main extends Application {
 
         stage.setTitle("Tic Tac Toe");
         stage.setScene(scene);
+
+        stage.setScene(scene);
+
+        ScreenManager.setStage(stage);
 
         stage.setWidth(UIConfig.BASE_WIDTH);
         stage.setHeight(UIConfig.BASE_HEIGHT);
