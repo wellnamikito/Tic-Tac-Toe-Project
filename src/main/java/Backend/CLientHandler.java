@@ -11,6 +11,7 @@ public class CLientHandler implements Runnable {
     private TCPServer server;
     private BufferedReader in;
     private PrintWriter out;
+    private GameSession session;
 
     public CLientHandler(Socket socket, TCPServer server){
         this.socket = socket;
@@ -30,8 +31,9 @@ public class CLientHandler implements Runnable {
             while((message = in.readLine()) != null){
                 System.out.println("Received: " + message);
 
-                // пока просто рассылаем всем
-                server.broadcast(message);
+                if (session != null) {
+                    session.handleMessage(this, message);
+                }
             }
         } catch (Exception e) {
             System.out.println("Client lost connection");
@@ -42,6 +44,7 @@ public class CLientHandler implements Runnable {
     public void sendMessage(String message){
         out.println(message);
     }
+    public void setSession(GameSession session){ this.session = session;}
 
     private void closeConnection(){
         try{
