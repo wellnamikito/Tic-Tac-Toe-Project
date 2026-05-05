@@ -36,7 +36,7 @@ public class TCPServer {
                     CLientHandler p1 = waitingPlayers.remove(0);
                     CLientHandler p2 = waitingPlayers.remove(0);
 
-                    new GameSession(p1, p2);
+                    new GameSession(p1, p2, 3); // либо 4 или 5
 
                     System.out.println("Game session started!");
                 }

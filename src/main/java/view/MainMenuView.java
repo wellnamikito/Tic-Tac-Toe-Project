@@ -144,7 +144,7 @@ public class MainMenuView {
         Scene scene = new Scene(root, UIConfig.BASE_WIDTH, UIConfig.BASE_HEIGHT);
 
         bindScaling(scene);
-        AudioManager.playMusic("src/main/resources/audio/fff.mp3");
+        AudioManager.playMusic("/audio/fff.mp3");
         return scene;
     }
 

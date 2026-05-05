@@ -5,6 +5,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import manager.AudioManager;
 import manager.ScreenManager;
 import view.MainMenuView;
 
@@ -26,6 +27,7 @@ public class Main extends Application {
         stage.setScene(scene);
 
         stage.setScene(scene);
+        AudioManager.playMusic("src/main/resources/audio/fff.mp3");
 
         ScreenManager.setStage(stage);
 

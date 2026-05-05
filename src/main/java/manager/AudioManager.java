@@ -29,6 +29,12 @@ public class AudioManager {
 
         var url = AudioManager.class.getResource(path);
 
+        // 🔥 ВОТ ЭТИ СТРОКИ ДОБАВЬ
+
+        log("PATH = " + path);
+
+        log("URL = " + url);
+
         if (url == null) {
             log("❌ FILE NOT FOUND: " + path);
             return;
