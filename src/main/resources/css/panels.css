@@ -1,0 +1,88 @@
+/* =========================================================
+   PANEL BASE (серо-прозрачная игровая панель)
+   ========================================================= */
+.panel-root {
+    -fx-background-color: rgba(54, 53, 52, 0.78);
+
+    -fx-background-radius: 30;
+    -fx-border-radius: 30;
+
+    -fx-border-color: #B7B7B7;
+    -fx-border-width: 2;
+
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 30, 0.4, 0, 6);
+}
+
+
+/* =========================================================
+   TEXT STYLE
+   ========================================================= */
+.rule-title {
+    -fx-fill: white;
+    -fx-font-size: 34px;
+    -fx-font-weight: bold;
+}
+
+.rule-text {
+    -fx-fill: white;
+    -fx-font-size: 19px;
+}
+
+
+/* =========================================================
+   SCROLLPANE (визуально скрыт, но работает)
+   ========================================================= */
+
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+/* убираем фон viewport */
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+
+/* =========================================================
+   SCROLLBAR (полностью скрываем)
+   ========================================================= */
+
+/* вертикальный скроллбар */
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+}
+
+/* горизонтальный (на всякий случай) */
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+}
+
+
+/* трек */
+.scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+}
+
+/* ползунок */
+.scroll-bar:vertical .thumb {
+    -fx-background-color: transparent;
+}
+
+/* hover */
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: transparent;
+}
+
+
+/* кнопки стрелок */
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-opacity: 0;
+}

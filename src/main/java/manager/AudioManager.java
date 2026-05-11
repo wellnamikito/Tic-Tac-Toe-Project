@@ -23,10 +23,6 @@ public class AudioManager {
 
     public static void playMusic(String path) {
 
-        stopMusic();
-
-        log("PLAY MUSIC: " + path);
-
         var url = AudioManager.class.getResource(path);
 
         // 🔥 ВОТ ЭТИ СТРОКИ ДОБАВЬ
@@ -36,10 +32,13 @@ public class AudioManager {
         log("URL = " + url);
 
         if (url == null) {
-            log("❌ FILE NOT FOUND: " + path);
+            System.out.println("❌ AUDIO NOT FOUND: " + path);
             return;
         }
 
+        System.out.println("✔ AUDIO URL: " + url);
+
+        stopMusic();
         try {
             Media media = new Media(url.toExternalForm());
 

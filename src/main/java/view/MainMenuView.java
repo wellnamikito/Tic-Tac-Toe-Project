@@ -26,14 +26,8 @@ public class MainMenuView {
 
         MainMenuController controller = new MainMenuController(stage);
 
-        // =========================
-        // ROOT
-        // =========================
         StackPane root = new StackPane();
 
-        // =========================
-        // BACKGROUND
-        // =========================
         ImageView bg = new ImageView(
                 new Image(getClass().getResource("/images/background.png").toExternalForm())
         );
@@ -42,37 +36,21 @@ public class MainMenuView {
         bg.fitWidthProperty().bind(stage.widthProperty());
         bg.fitHeightProperty().bind(stage.heightProperty());
 
-        // =========================
-        // UI (1920x1080 виртуальный экран)
-        // =========================
         AnchorPane ui = new AnchorPane();
         ui.setPrefSize(UIConfig.BASE_WIDTH, UIConfig.BASE_HEIGHT);
 
-        // =========================
-        // LEFT PANEL
-        // =========================
         ImageView panel = new ImageView(
                 new Image(getClass().getResource("/images/menu_panel.png").toExternalForm())
         );
 
         panel.setFitWidth(500);
-        panel.setLayoutX(0);
-        panel.setLayoutY(0);
 
-        // =========================
-        // LOGO
-        // =========================
         ImageView logo = new ImageView(
                 new Image(getClass().getResource("/images/logo.png").toExternalForm())
         );
 
         logo.setFitWidth(513);
-        logo.setLayoutX(-7);
-        logo.setLayoutY(0);
 
-        // =========================
-        // BUTTONS
-        // =========================
         Button play = createButton("/buttons/play.png");
         Button shop = createButton("/buttons/shop.png");
         Button rules = createButton("/buttons/rules.png");
@@ -95,18 +73,12 @@ public class MainMenuView {
         addHover(rules);
         addHover(settings);
 
-        // =========================
-        // RIGHT PANEL
-        // =========================
         rightPanelContainer = new AnchorPane();
-
-        rightPanelContainer.setLayoutX(0);
-        rightPanelContainer.setLayoutY(0);
         rightPanelContainer.setPrefSize(650, 800);
 
-        // =========================
-        // ACTIONS
-        // =========================
+        // ВАЖНО: пока нет панели — мышь НЕ блокируется
+        rightPanelContainer.setMouseTransparent(true);
+
         play.setOnAction(e -> controller.onPlay());
 
         settings.setOnAction(e ->
@@ -121,9 +93,6 @@ public class MainMenuView {
                 togglePanel(new ShopPanel(), "shop", shop, settings, rules)
         );
 
-        // =========================
-        // ADD UI ELEMENTS
-        // =========================
         ui.getChildren().addAll(
                 panel,
                 logo,
@@ -134,9 +103,6 @@ public class MainMenuView {
                 rightPanelContainer
         );
 
-        // =========================
-        // SCALE CONTAINER
-        // =========================
         scaleContainer = new Group(ui);
 
         root.getChildren().addAll(bg, scaleContainer);
@@ -144,39 +110,15 @@ public class MainMenuView {
         Scene scene = new Scene(root, UIConfig.BASE_WIDTH, UIConfig.BASE_HEIGHT);
 
         bindScaling(scene);
+
         AudioManager.playMusic("/audio/fff.mp3");
+
         return scene;
     }
 
-    // =========================
-    // SCALING
-    // =========================
-    private void bindScaling(Scene scene) {
-
-        scene.widthProperty().addListener((obs, oldVal, newVal) -> updateScale(scene));
-        scene.heightProperty().addListener((obs, oldVal, newVal) -> updateScale(scene));
-
-        updateScale(scene);
-    }
-
-    private void updateScale(Scene scene) {
-
-        double scaleX = scene.getWidth() / UIConfig.BASE_WIDTH;
-        double scaleY = scene.getHeight() / UIConfig.BASE_HEIGHT;
-
-        double scale = Math.min(scaleX, scaleY);
-
-        scaleContainer.setScaleX(scale);
-        scaleContainer.setScaleY(scale);
-    }
-
-    // =========================
-    // PANEL TOGGLE
-    // =========================
     private void togglePanel(Node panel, String name, Button active, Button... others) {
 
         if (openedPanel.equals(name)) {
-
             hidePanel();
             openedPanel = "";
             active.setStyle("-fx-background-color: transparent;");
@@ -195,19 +137,21 @@ public class MainMenuView {
 
     private void showPanel(Node panel) {
 
-        panel.setLayoutX(530);
-        panel.setLayoutY(24);
+        rightPanelContainer.setLayoutX(530);
+        rightPanelContainer.setLayoutY(24);
 
         rightPanelContainer.getChildren().setAll(panel);
+
+        rightPanelContainer.setMouseTransparent(false);
     }
 
     private void hidePanel() {
+
         rightPanelContainer.getChildren().clear();
+
+        rightPanelContainer.setMouseTransparent(true);
     }
 
-    // =========================
-    // BUTTON FACTORY
-    // =========================
     private Button createButton(String path) {
 
         ImageView img = new ImageView(
@@ -218,28 +162,49 @@ public class MainMenuView {
         img.setPreserveRatio(true);
 
         Button b = new Button("", img);
-        b.setStyle("-fx-background-color: transparent;");
+
+        b.setFocusTraversable(false);
+
+        b.setStyle("""
+            -fx-background-color: transparent;
+            -fx-background-insets: 0;
+            -fx-padding: 0;
+            -fx-focus-color: transparent;
+            -fx-faint-focus-color: transparent;
+        """);
 
         return b;
     }
 
-    // =========================
-    // HOVER EFFECT
-    // =========================
     private void addHover(Button b) {
 
         b.setOnMouseEntered(e -> {
-
             b.setScaleX(1.05);
             b.setScaleY(1.05);
-
         });
 
         b.setOnMouseExited(e -> {
-
             b.setScaleX(1);
             b.setScaleY(1);
-
         });
+    }
+
+    private void bindScaling(Scene scene) {
+
+        scene.widthProperty().addListener((obs, o, n) -> updateScale(scene));
+        scene.heightProperty().addListener((obs, o, n) -> updateScale(scene));
+
+        updateScale(scene);
+    }
+
+    private void updateScale(Scene scene) {
+
+        double scaleX = scene.getWidth() / UIConfig.BASE_WIDTH;
+        double scaleY = scene.getHeight() / UIConfig.BASE_HEIGHT;
+
+        double scale = Math.min(scaleX, scaleY);
+
+        scaleContainer.setScaleX(scale);
+        scaleContainer.setScaleY(scale);
     }
 }

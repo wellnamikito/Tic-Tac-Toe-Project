@@ -1,228 +1,251 @@
 package view.panels;
 
-import config.UIConfig;
 import javafx.geometry.Insets;
-import javafx.scene.control.Button;
-import javafx.scene.control.Slider;
-import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import manager.AudioManager;
 import manager.ScreenManager;
 
 public class SettingsPanel extends StackPane {
 
-    private Pane layout;
-
     public SettingsPanel() {
 
-        setPrefSize(1368, 549);
+        // ================= BACKDROP =================
+        setPrefSize(1368, 768);
+        getStyleClass().add("settings-overlay");
 
-        layout = new Pane();
-        layout.setPrefSize(1368, 549);
+        // ================= WINDOW =================
+        VBox window = new VBox();
+        window.getStyleClass().add("settings-window");
 
-        // =========================
-        // PANEL BACKGROUND
-        // =========================
+        window.setPrefWidth(720);
+        window.setMaxWidth(720);
 
-        ImageView panel = new ImageView(
-                new Image(getClass().getResource("/images/settings_panel.png").toExternalForm())
+        window.setPadding(new Insets(28));
+        window.setSpacing(20);
+        window.setAlignment(Pos.TOP_CENTER);
+
+        StackPane.setAlignment(window, Pos.CENTER);
+
+        // ================= CLOSE BUTTON =================
+        Button close = new Button("✕");
+        close.getStyleClass().add("settings-close");
+
+        close.setOnAction(e -> this.setVisible(false));
+
+        HBox top = new HBox(close);
+        top.setAlignment(Pos.TOP_RIGHT);
+
+        // ================= TITLE =================
+        Label title = new Label("НАСТРОЙКИ");
+        title.getStyleClass().add("settings-title");
+
+        // ================= GRID =================
+        GridPane grid = new GridPane();
+
+        grid.setHgap(30);
+        grid.setVgap(18);
+
+        ColumnConstraints c1 = new ColumnConstraints();
+        c1.setPercentWidth(45);
+
+        ColumnConstraints c2 = new ColumnConstraints();
+        c2.setPercentWidth(55);
+
+        grid.getColumnConstraints().addAll(c1, c2);
+
+        int row = 0;
+
+        // =====================================================
+        // RESOLUTION
+        // =====================================================
+
+        grid.add(sectionLabel("Разрешение экрана"), 0, row);
+
+        ComboBox<String> resolution = new ComboBox<>();
+
+        resolution.getItems().addAll(
+                "1920x1080",
+                "1600x900",
+                "1280x720"
         );
 
-        panel.setFitWidth(1368);
-        panel.setFitHeight(549);
+        resolution.setValue("1920x1080");
 
-        layout.getChildren().add(panel);
+        resolution.getStyleClass().add("settings-combo");
 
-        // =========================
-        // FULLSCREEN BUTTON
-        // =========================
+        resolution.setPrefWidth(260);
 
-        Button fullscreenBtn = createToggleButton("Fullscreen");
+        grid.add(resolution, 1, row++);
 
-        fullscreenBtn.setLayoutX(1050);
-        fullscreenBtn.setLayoutY(110);
+        grid.add(new Separator(), 0, row++, 2, 1);
 
-        fullscreenBtn.setOnAction(e -> {
+        // =====================================================
+        // FULLSCREEN
+        // =====================================================
+
+        grid.add(sectionLabel("Режим экрана"), 0, row);
+
+        ToggleButton fullscreen = new ToggleButton("Fullscreen");
+
+        fullscreen.getStyleClass().add("settings-button");
+
+        fullscreen.setPrefWidth(260);
+
+        fullscreen.setOnAction(e -> {
 
             boolean state = ScreenManager.toggleFullscreen();
 
-            if (state)
-                fullscreenBtn.setText("Fullscreen ON");
-            else
-                fullscreenBtn.setText("Fullscreen OFF");
-        });
-
-        // =========================
-        // MUSIC VOLUME SLIDER
-        // =========================
-
-        Slider musicSlider = new Slider();
-
-        musicSlider.setMin(0);
-        musicSlider.setMax(1);
-        musicSlider.setValue(AudioManager.getMusicVolume());
-
-        musicSlider.setPrefWidth(300);
-
-        musicSlider.setLayoutX(700);
-        musicSlider.setLayoutY(300);
-
-        // MUSIC PERCENT TEXT
-        Label musicPercent = new Label();
-        musicPercent.setLayoutX(1010);
-        musicPercent.setLayoutY(300);
-        musicPercent.setStyle("-fx-text-fill: white; -fx-font-size: 18;");
-
-        musicPercent.setText((int)(musicSlider.getValue() * 100) + "%");
-
-        musicSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-
-            AudioManager.setMusicVolume(newVal.doubleValue());
-
-            int percent = (int)(newVal.doubleValue() * 100);
-            musicPercent.setText(percent + "%");
-
-        });
-
-
-        // =========================
-        // MUSIC MUTE BUTTON
-        // =========================
-
-        Button musicMute = createToggleButton("Music ON");
-
-        musicMute.setLayoutX(1050);
-        musicMute.setLayoutY(207);
-
-        setButtonOnStyle(musicMute);
-
-        musicMute.setOnAction(e -> {
-
-            boolean muted = AudioManager.toggleMusic();
-
-            if (muted) {
-                musicMute.setText("Music OFF");
-                setButtonOffStyle(musicMute);
+            if (state) {
+                fullscreen.setText("Fullscreen");
             } else {
-                musicMute.setText("Music ON");
-                setButtonOnStyle(musicMute);
+                fullscreen.setText("Windowed");
             }
-        });
-
-        // =========================
-        // SOUND VOLUME SLIDER
-        // =========================
-
-        Slider soundSlider = new Slider();
-
-        soundSlider.setMin(0);
-        soundSlider.setMax(1);
-        soundSlider.setValue(AudioManager.getSoundVolume());
-
-        soundSlider.setPrefWidth(300);
-
-        soundSlider.setLayoutX(700);
-        soundSlider.setLayoutY(480);
-
-        // SOUND PERCENT TEXT
-        Label soundPercent = new Label();
-        soundPercent.setLayoutX(1010);
-        soundPercent.setLayoutY(480);
-        soundPercent.setStyle("-fx-text-fill: white; -fx-font-size: 18;");
-
-        soundPercent.setText((int)(soundSlider.getValue() * 100) + "%");
-
-        soundSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-
-            AudioManager.setSoundVolume(newVal.doubleValue());
-
-            int percent = (int)(newVal.doubleValue() * 100);
-            soundPercent.setText(percent + "%");
 
         });
 
-        // =========================
-        // SOUND MUTE BUTTON
-        // =========================
+        grid.add(fullscreen, 1, row++);
 
-        Button soundMute = createToggleButton("Sound ON");
+        grid.add(new Separator(), 0, row++, 2, 1);
 
-        soundMute.setLayoutX(1050);
-        soundMute.setLayoutY(387);
+        // =====================================================
+        // MUSIC
+        // =====================================================
 
-        setButtonOnStyle(soundMute);
+        grid.add(sectionLabel("Музыка"), 0, row);
 
-        soundMute.setOnAction(e -> {
+        ToggleButton musicOn = new ToggleButton("Вкл");
+        ToggleButton musicOff = new ToggleButton("Выкл");
 
-            boolean muted = AudioManager.toggleSound();
+        musicOn.getStyleClass().add("settings-button");
+        musicOff.getStyleClass().add("settings-button");
 
-            if (muted) {
-                soundMute.setText("Sound OFF");
-                setButtonOffStyle(soundMute);
-            } else {
-                soundMute.setText("Sound ON");
-                setButtonOnStyle(soundMute);
-            }
-        });
+        musicOn.setSelected(true);
 
-        layout.getChildren().addAll(
-                fullscreenBtn,
-                musicSlider,
-                musicPercent,
-                musicMute,
-                soundSlider,
-                soundPercent,
-                soundMute
+        HBox musicButtons = new HBox(12, musicOn, musicOff);
+        musicButtons.setAlignment(Pos.CENTER_LEFT);
+
+        Slider musicSlider = slider(
+                AudioManager.getMusicVolume(),
+                v -> AudioManager.setMusicVolume(v)
         );
 
-        getChildren().add(layout);
-        setPadding(new Insets(0));
-    }
+        musicSlider.setPrefWidth(320);
 
-    // =========================
-    // BUTTON STYLE
-    // =========================
-    private void setButtonOnStyle(Button b) {
-
-        b.setStyle("""
-            -fx-background-color: #2ecc71;
-            -fx-text-fill: white;
-            -fx-font-size: 16;
-            -fx-background-radius: 8;
-            """);
-    }
-
-    private void setButtonOffStyle(Button b) {
-
-        b.setStyle("""
-            -fx-background-color: #3c3c3c;
-            -fx-text-fill: white;
-            -fx-font-size: 16;
-            -fx-background-radius: 8;
-            """);
-    }
-
-    private Button createToggleButton(String text) {
-
-        Button b = new Button(text);
-
-        b.setPrefWidth(160);
-        b.setPrefHeight(40);
-
-        // базовый стиль (OFF по умолчанию)
-        setButtonOffStyle(b);
-
-        b.setOnMouseEntered(e -> {
-            b.setStyle(b.getStyle() + "-fx-cursor: hand;");
+        musicOn.setOnAction(e -> {
+            musicOn.setSelected(true);
+            musicOff.setSelected(false);
+            AudioManager.setMusicVolume(musicSlider.getValue());
         });
 
-        b.setOnMouseExited(e -> {
-            b.setStyle(b.getStyle().replace("-fx-cursor: hand;", ""));
+        musicOff.setOnAction(e -> {
+            musicOff.setSelected(true);
+            musicOn.setSelected(false);
+            AudioManager.setMusicVolume(0);
         });
 
-        return b;
+        VBox musicBox = new VBox(8, musicButtons, musicSlider);
+        musicBox.setAlignment(Pos.CENTER_LEFT);
+
+        grid.add(musicBox, 1, row++);
+
+        grid.add(new Separator(), 0, row++, 2, 1);
+
+        // =====================================================
+        // SOUND
+        // =====================================================
+
+        grid.add(sectionLabel("Звук"), 0, row);
+
+        ToggleButton soundOn = new ToggleButton("Вкл");
+        ToggleButton soundOff = new ToggleButton("Выкл");
+
+        soundOn.getStyleClass().add("settings-button");
+        soundOff.getStyleClass().add("settings-button");
+
+        soundOn.setSelected(true);
+
+        HBox soundButtons = new HBox(12, soundOn, soundOff);
+        soundButtons.setAlignment(Pos.CENTER_LEFT);
+
+        Slider soundSlider = slider(
+                AudioManager.getSoundVolume(),
+                v -> AudioManager.setSoundVolume(v)
+        );
+
+        soundSlider.setPrefWidth(320);
+
+        soundOn.setOnAction(e -> {
+            soundOn.setSelected(true);
+            soundOff.setSelected(false);
+            AudioManager.setSoundVolume(soundSlider.getValue());
+        });
+
+        soundOff.setOnAction(e -> {
+            soundOff.setSelected(true);
+            soundOn.setSelected(false);
+            AudioManager.setSoundVolume(0);
+        });
+
+        VBox soundBox = new VBox(8, soundButtons, soundSlider);
+        soundBox.setAlignment(Pos.CENTER_LEFT);
+
+        grid.add(soundBox, 1, row++);
+
+        // ================= BUILD =================
+
+        window.getChildren().addAll(
+                top,
+                title,
+                grid
+        );
+
+        getChildren().add(window);
+
+        // ================= CSS =================
+
+        getStylesheets().add(
+                getClass()
+                        .getResource("/css/Settings.css")
+                        .toExternalForm()
+        );
+    }
+
+    // =====================================================
+    // LABEL
+    // =====================================================
+
+    private Label sectionLabel(String text) {
+
+        Label label = new Label(text);
+
+        label.getStyleClass().add("settings-section");
+
+        label.setAlignment(Pos.CENTER_LEFT);
+
+        label.setMaxWidth(Double.MAX_VALUE);
+
+        return label;
+    }
+
+    // =====================================================
+    // SLIDER
+    // =====================================================
+
+    private Slider slider(
+            double value,
+            java.util.function.DoubleConsumer onChange
+    ) {
+
+        Slider slider = new Slider(0, 1, value);
+
+        slider.getStyleClass().add("settings-slider");
+
+        slider.valueProperty().addListener((obs, oldVal, newVal) ->
+                onChange.accept(newVal.doubleValue())
+        );
+
+        return slider;
     }
 }

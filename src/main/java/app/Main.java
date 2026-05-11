@@ -26,9 +26,6 @@ public class Main extends Application {
         stage.setTitle("Tic Tac Toe");
         stage.setScene(scene);
 
-        stage.setScene(scene);
-        AudioManager.playMusic("src/main/resources/audio/fff.mp3");
-
         ScreenManager.setStage(stage);
 
         stage.setWidth(UIConfig.BASE_WIDTH);
@@ -47,17 +44,22 @@ public class Main extends Application {
                 requestResize(stage, lastW, lastH));
 
         stage.show();
+
+        // fullscreen запускается ПОСЛЕ show (важно)
+        Platform.runLater(ScreenManager::startFullscreen);
+
+        // музыка один раз
+        AudioManager.playMusic("/audio/fff.mp3");
     }
 
     private void requestResize(Stage stage, double[] lastW, double[] lastH) {
 
         if (updating) return;
-
         if (pending) return;
+
         pending = true;
 
         Platform.runLater(() -> {
-
             pending = false;
             applyResize(stage, lastW, lastH);
         });

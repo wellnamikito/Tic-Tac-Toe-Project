@@ -1,5 +1,6 @@
 package manager;
 
+import config.UIConfig;
 import javafx.stage.Stage;
 
 public class ScreenManager {
@@ -8,6 +9,13 @@ public class ScreenManager {
 
     public static void setStage(Stage s) {
         stage = s;
+    }
+
+    public static void startFullscreen() {
+
+        if (stage == null) return;
+
+        stage.setFullScreen(true);
     }
 
     public static boolean toggleFullscreen() {
@@ -19,6 +27,15 @@ public class ScreenManager {
 
         stage.setFullScreen(newState);
 
+        if (!newState) {
+
+            stage.setWidth(UIConfig.BASE_WIDTH);
+            stage.setHeight(UIConfig.BASE_HEIGHT);
+
+            stage.centerOnScreen();
+        }
+
         return newState;
     }
+
 }
