@@ -13,39 +13,47 @@ public class SettingsPanel extends StackPane {
 
         // ================= BACKDROP =================
         setPrefSize(1368, 768);
+        setStyle("-fx-background-color: transparent;");
         getStyleClass().add("settings-overlay");
+        setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
         // ================= WINDOW =================
         VBox window = new VBox();
         window.getStyleClass().add("settings-window");
 
-        window.setPrefWidth(720);
-        window.setMaxWidth(720);
-
-        window.setPadding(new Insets(28));
-        window.setSpacing(20);
+        window.setPrefWidth(1339);
+        window.setMaxWidth(1339);
+        window.setMinWidth(1339);
+        window.setPadding(new Insets(52));
+        window.setSpacing(38);
         window.setAlignment(Pos.TOP_CENTER);
 
         StackPane.setAlignment(window, Pos.CENTER);
 
-        // ================= CLOSE BUTTON =================
-        Button close = new Button("✕");
-        close.getStyleClass().add("settings-close");
+        // ================= CLOSE BUTTON (КРЕСТИК В ПРАВОМ ВЕРХНЕМ УГЛУ) =================
+        Button closeButton = new Button("Х");
+        closeButton.getStyleClass().add("settings-close");
+        closeButton.setPrefSize(60, 60);
+        closeButton.setCursor(javafx.scene.Cursor.HAND);
 
-        close.setOnAction(e -> this.setVisible(false));
+        // ДЕЙСТВИЕ ПРИ НАЖАТИИ - ЗАКРЫВАЕТ ПАНЕЛЬ
+        closeButton.setOnAction(e -> this.setVisible(false));
 
-        HBox top = new HBox(close);
-        top.setAlignment(Pos.TOP_RIGHT);
+        HBox topBox = new HBox();
+        topBox.setAlignment(Pos.TOP_RIGHT);
+        topBox.getChildren().add(closeButton);
 
         // ================= TITLE =================
         Label title = new Label("НАСТРОЙКИ");
         title.getStyleClass().add("settings-title");
+        title.setMaxWidth(Double.MAX_VALUE);
+        title.setAlignment(Pos.CENTER);
+        VBox.setMargin(title, new Insets(-100, 0, 0, 0));
 
         // ================= GRID =================
         GridPane grid = new GridPane();
-
-        grid.setHgap(30);
-        grid.setVgap(18);
+        grid.setHgap(56);
+        grid.setVgap(33);
 
         ColumnConstraints c1 = new ColumnConstraints();
         c1.setPercentWidth(45);
@@ -60,78 +68,59 @@ public class SettingsPanel extends StackPane {
         // =====================================================
         // RESOLUTION
         // =====================================================
-
-        grid.add(sectionLabel("Разрешение экрана"), 0, row);
+        grid.add(createSectionLabel("Разрешение экрана"), 0, row);
 
         ComboBox<String> resolution = new ComboBox<>();
-
-        resolution.getItems().addAll(
-                "1920x1080",
-                "1600x900",
-                "1280x720"
-        );
-
+        resolution.getItems().addAll("1920x1080", "1600x900", "1280x720");
         resolution.setValue("1920x1080");
-
         resolution.getStyleClass().add("settings-combo");
-
-        resolution.setPrefWidth(260);
+        resolution.setPrefWidth(484);
+        resolution.setPrefHeight(62);
 
         grid.add(resolution, 1, row++);
-
-        grid.add(new Separator(), 0, row++, 2, 1);
+        grid.add(createSeparator(), 0, row++, 2, 1);
 
         // =====================================================
         // FULLSCREEN
         // =====================================================
-
-        grid.add(sectionLabel("Режим экрана"), 0, row);
+        grid.add(createSectionLabel("Режим экрана"), 0, row);
 
         ToggleButton fullscreen = new ToggleButton("Fullscreen");
-
         fullscreen.getStyleClass().add("settings-button");
-
-        fullscreen.setPrefWidth(260);
+        fullscreen.setPrefWidth(484);
+        fullscreen.setPrefHeight(62);
 
         fullscreen.setOnAction(e -> {
-
             boolean state = ScreenManager.toggleFullscreen();
-
-            if (state) {
-                fullscreen.setText("Fullscreen");
-            } else {
-                fullscreen.setText("Windowed");
-            }
-
+            fullscreen.setText(state ? "Fullscreen" : "Windowed");
+            fullscreen.setSelected(state);
         });
 
         grid.add(fullscreen, 1, row++);
-
-        grid.add(new Separator(), 0, row++, 2, 1);
+        grid.add(createSeparator(), 0, row++, 2, 1);
 
         // =====================================================
         // MUSIC
         // =====================================================
-
-        grid.add(sectionLabel("Музыка"), 0, row);
+        grid.add(createSectionLabel("Музыка"), 0, row);
 
         ToggleButton musicOn = new ToggleButton("Вкл");
         ToggleButton musicOff = new ToggleButton("Выкл");
 
         musicOn.getStyleClass().add("settings-button");
         musicOff.getStyleClass().add("settings-button");
-
+        musicOn.setPrefSize(182, 72);
+        musicOff.setPrefSize(182, 72);
         musicOn.setSelected(true);
 
-        HBox musicButtons = new HBox(12, musicOn, musicOff);
+        HBox musicButtons = new HBox(23, musicOn, musicOff);
         musicButtons.setAlignment(Pos.CENTER_LEFT);
 
-        Slider musicSlider = slider(
+        Slider musicSlider = createSlider(
                 AudioManager.getMusicVolume(),
                 v -> AudioManager.setMusicVolume(v)
         );
-
-        musicSlider.setPrefWidth(320);
+        musicSlider.setPrefWidth(595);
 
         musicOn.setOnAction(e -> {
             musicOn.setSelected(true);
@@ -145,36 +134,34 @@ public class SettingsPanel extends StackPane {
             AudioManager.setMusicVolume(0);
         });
 
-        VBox musicBox = new VBox(8, musicButtons, musicSlider);
+        VBox musicBox = new VBox(14, musicButtons, musicSlider);
         musicBox.setAlignment(Pos.CENTER_LEFT);
 
         grid.add(musicBox, 1, row++);
-
-        grid.add(new Separator(), 0, row++, 2, 1);
+        grid.add(createSeparator(), 0, row++, 2, 1);
 
         // =====================================================
         // SOUND
         // =====================================================
-
-        grid.add(sectionLabel("Звук"), 0, row);
+        grid.add(createSectionLabel("Звук"), 0, row);
 
         ToggleButton soundOn = new ToggleButton("Вкл");
         ToggleButton soundOff = new ToggleButton("Выкл");
 
         soundOn.getStyleClass().add("settings-button");
         soundOff.getStyleClass().add("settings-button");
-
+        soundOn.setPrefSize(182, 72);
+        soundOff.setPrefSize(182, 72);
         soundOn.setSelected(true);
 
-        HBox soundButtons = new HBox(12, soundOn, soundOff);
+        HBox soundButtons = new HBox(23, soundOn, soundOff);
         soundButtons.setAlignment(Pos.CENTER_LEFT);
 
-        Slider soundSlider = slider(
+        Slider soundSlider = createSlider(
                 AudioManager.getSoundVolume(),
                 v -> AudioManager.setSoundVolume(v)
         );
-
-        soundSlider.setPrefWidth(320);
+        soundSlider.setPrefWidth(595);
 
         soundOn.setOnAction(e -> {
             soundOn.setSelected(true);
@@ -188,64 +175,51 @@ public class SettingsPanel extends StackPane {
             AudioManager.setSoundVolume(0);
         });
 
-        VBox soundBox = new VBox(8, soundButtons, soundSlider);
+        VBox soundBox = new VBox(14, soundButtons, soundSlider);
         soundBox.setAlignment(Pos.CENTER_LEFT);
 
         grid.add(soundBox, 1, row++);
 
         // ================= BUILD =================
-
-        window.getChildren().addAll(
-                top,
-                title,
-                grid
-        );
-
+        window.getChildren().addAll(topBox, title, grid);
         getChildren().add(window);
 
         // ================= CSS =================
-
         getStylesheets().add(
                 getClass()
                         .getResource("/css/Settings.css")
                         .toExternalForm()
         );
+
+        // Центрирование при изменении размера
+        widthProperty().addListener((obs, old, newVal) -> {
+            window.setLayoutX((newVal.doubleValue() - window.getPrefWidth()) / 2);
+        });
+        heightProperty().addListener((obs, old, newVal) -> {
+            window.setLayoutY((newVal.doubleValue() - window.getPrefHeight()) / 2);
+        });
     }
 
-    // =====================================================
-    // LABEL
-    // =====================================================
-
-    private Label sectionLabel(String text) {
-
+    private Label createSectionLabel(String text) {
         Label label = new Label(text);
-
         label.getStyleClass().add("settings-section");
-
         label.setAlignment(Pos.CENTER_LEFT);
-
         label.setMaxWidth(Double.MAX_VALUE);
-
         return label;
     }
 
-    // =====================================================
-    // SLIDER
-    // =====================================================
+    private Separator createSeparator() {
+        Separator separator = new Separator();
+        separator.setPrefHeight(1);
+        return separator;
+    }
 
-    private Slider slider(
-            double value,
-            java.util.function.DoubleConsumer onChange
-    ) {
-
+    private Slider createSlider(double value, java.util.function.DoubleConsumer onChange) {
         Slider slider = new Slider(0, 1, value);
-
         slider.getStyleClass().add("settings-slider");
-
         slider.valueProperty().addListener((obs, oldVal, newVal) ->
                 onChange.accept(newVal.doubleValue())
         );
-
         return slider;
     }
 }

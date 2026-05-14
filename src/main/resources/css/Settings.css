@@ -3,7 +3,6 @@
    ========================================================= */
 
 .settings-overlay {
-
     -fx-background-color: transparent;
 }
 
@@ -12,145 +11,113 @@
    ========================================================= */
 
 .settings-window {
-
     -fx-background-color: rgba(245,235,220,0.22);
-
-    -fx-background-radius: 32;
-    -fx-border-radius: 32;
-
+    -fx-background-radius: 60;
+    -fx-border-radius: 60;
     -fx-border-color: rgba(255,255,255,0.20);
     -fx-border-width: 1.5;
-
-    -fx-effect:
-        dropshadow(gaussian,
-        rgba(0,0,0,0.35),
-        40, 0.20, 0, 10);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 74, 0.20, 0, 18);
 }
 
 /* =========================================================
-   TITLE
+   TITLE (БЕЛЫЙ ТЕКСТ, ЖИРНЫЙ)
    ========================================================= */
 
 .settings-title {
-
-    -fx-text-fill: #f7f1ea;
-
-    -fx-font-size: 34px;
-
-    -fx-font-weight: 300;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 62px;
+    -fx-font-weight: bold;
+    -fx-font-family: 'Segoe UI';
 }
 
 /* =========================================================
-   SECTION LABELS
+   SECTION LABELS (БЕЛЫЙ ТЕКСТ, ЖИРНЫЙ)
    ========================================================= */
 
 .settings-section {
-
-    -fx-text-fill: #f5eee7;
-
-    -fx-font-size: 22px;
-
-    -fx-font-weight: 300;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 42px;
+    -fx-font-weight: bold;
+    -fx-font-family: 'Segoe UI';
 }
 
 /* =========================================================
-   CLOSE BUTTON
+   CLOSE BUTTON (КРЕСТИК В ПРАВОМ ВЕРХНЕМ УГЛУ)
    ========================================================= */
 
 .settings-close {
-
-    -fx-background-color: transparent;
-
-    -fx-text-fill: #f7f1ea;
-
-    -fx-font-size: 28px;
-
+    -fx-background-color: rgba(255,255,255,0.15);
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 42px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 30;
     -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0.15, 0, 2);
 }
 
 .settings-close:hover {
+    -fx-background-color: rgba(255,100,100,0.8);
+    -fx-text-fill: #FFFFFF;
+}
 
-    -fx-text-fill: white;
+.settings-close:pressed {
+    -fx-background-color: rgba(255,50,50,0.9);
+    -fx-effect: innershadow(gaussian, rgba(0,0,0,0.3), 6, 0.20, 0, 1);
 }
 
 /* =========================================================
-   BUTTONS
+   BUTTONS (ЧЁРНЫЙ ТЕКСТ НА КНОПКАХ, ЖИРНЫЙ)
    ========================================================= */
 
 .settings-button {
-
-    -fx-background-color:
-        linear-gradient(to bottom,
-            #eadcc5,
-            #d8c4a6);
-
-    -fx-text-fill: #2d2118;
-
-    -fx-font-size: 18px;
-
-    -fx-background-radius: 12;
-
-    -fx-padding: 10 26 10 26;
-
+    -fx-background-color: linear-gradient(to bottom, #eadcc5, #d8c4a6);
+    -fx-text-fill: #1a1a1a;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 23;
+    -fx-padding: 16 26 16 26;
     -fx-cursor: hand;
-
-    -fx-transition: all 0.15s;
-    -fx-effect:
-        dropshadow(gaussian,
-        rgba(0,0,0,0.18),
-        8, 0.20, 0, 2);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 14, 0.20, 0, 4);
 }
 
 .settings-button:hover {
-
-    -fx-background-color:
-        linear-gradient(to bottom,
-            #f2e4ce,
-            #e0ccad);
+    -fx-background-color: linear-gradient(to bottom, #f2e4ce, #e0ccad);
 }
 
-/* ACTIVE */
-
 .settings-button:selected {
-
-    -fx-background-color:
-        linear-gradient(to bottom,
-            #cdb89a,
-            #b39a79);
-
+    -fx-background-color: linear-gradient(to bottom, #cdb89a, #b39a79);
     -fx-text-fill: white;
-
-    -fx-effect:
-        innershadow(gaussian,
-        rgba(0,0,0,0.35),
-        6, 0.20, 0, 2);
+    -fx-effect: innershadow(gaussian, rgba(0,0,0,0.35), 12, 0.20, 0, 4);
 }
 
 /* =========================================================
-   COMBOBOX
+   COMBOBOX (ЧЁРНЫЙ ТЕКСТ, ЖИРНЫЙ)
    ========================================================= */
 
 .settings-combo {
-
-    -fx-background-color:
-        linear-gradient(to bottom,
-            #eadcc5,
-            #d8c4a6);
-
-    -fx-background-radius: 12;
-
-    -fx-font-size: 18px;
-
-    -fx-text-fill: #2d2118;
-
-    -fx-padding: 8 14 8 14;
+    -fx-background-color: linear-gradient(to bottom, #eadcc5, #d8c4a6);
+    -fx-background-radius: 23;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a1a1a;
+    -fx-padding: 14 26 14 26;
 }
 
 .settings-combo .list-cell {
-
     -fx-background-color: transparent;
+    -fx-text-fill: #1a1a1a;
+    -fx-font-weight: bold;
+    -fx-font-size: 26px;
+}
 
-    -fx-text-fill: #2d2118;
+.settings-combo .list-cell:hover {
+    -fx-background-color: rgba(0,0,0,0.1);
+    -fx-text-fill: #1a1a1a;
+}
+
+.settings-combo .list-view {
+    -fx-background-color: #d8c4a6;
+    -fx-background-radius: 12;
 }
 
 /* =========================================================
@@ -158,27 +125,17 @@
    ========================================================= */
 
 .settings-slider .track {
-
     -fx-background-color: rgba(255,255,255,0.35);
-
-    -fx-background-radius: 10;
-
-    -fx-pref-height: 4;
+    -fx-background-radius: 18;
+    -fx-pref-height: 8;
 }
 
 .settings-slider .thumb {
-
     -fx-background-color: #fff9f2;
-
     -fx-background-radius: 50%;
-
-    -fx-pref-width: 18;
-    -fx-pref-height: 18;
-
-    -fx-effect:
-        dropshadow(gaussian,
-        rgba(0,0,0,0.35),
-        4, 0.30, 0, 1);
+    -fx-pref-width: 33;
+    -fx-pref-height: 33;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 8, 0.30, 0, 1);
 }
 
 /* =========================================================
@@ -186,6 +143,5 @@
    ========================================================= */
 
 .separator .line {
-
-    -fx-border-color: rgba(255,255,255,0.12);
+    -fx-border-color: rgba(255,255,255,0.25);
 }
