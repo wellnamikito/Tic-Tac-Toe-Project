@@ -41,12 +41,27 @@ public class GameSession {
 
 
     public void handleMessage(CLientHandler sender, String message){
-        if(gameOver) return;
+
+        if (message.equals("RESTART")) {
+            restartGame();
+            return;
+        }
+
+        if (message.startsWith("CHAT")) {
+
+            String chatMessage = message.substring(5);
+
+            getOpponent(sender).sendMessage("CHAT " + chatMessage);
+
+            return;
+        }
 
         if(!message.startsWith("MOVE")) return;
         String[] parts = message.split(" ");
         int x = Integer.parseInt(parts[1]);
         int y = Integer.parseInt(parts[2]);
+
+
 
         //проверка границ
         if(x < 0 || x >= size || y < 0 || y>= size){
@@ -58,6 +73,8 @@ public class GameSession {
             sender.sendMessage("INVALID");
             return;
         }
+
+        if (gameOver) return;
 
         // проверка очереди
         if(sender == player1 && !isPlayer1Turn ||
@@ -181,6 +198,24 @@ public class GameSession {
             player2.sendMessage("YOUR TUNR");
             player1.sendMessage("WAIT");
         }
+    }
+
+    private void restartGame() {
+
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                board[i][j] = ' ';
+            }
+        }
+
+        gameOver = false;
+        isPlayer1Turn = true;
+
+        sendState();
+        sendTurn();
+
+        player1.sendMessage("RESTART");
+        player2.sendMessage("RESTART");
     }
 
     private  CLientHandler getOpponent(CLientHandler player){
