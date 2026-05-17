@@ -1,5 +1,6 @@
 package view.panels;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -17,18 +18,22 @@ public class SettingsPanel extends StackPane {
         getStyleClass().add("settings-overlay");
         setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
-        // ================= WINDOW =================
+        // ================= WINDOW (С ФИКСИРОВАННЫМИ РАЗМЕРАМИ ДЛЯ ЦЕНТРИРОВАНИЯ) =================
         VBox window = new VBox();
         window.getStyleClass().add("settings-window");
 
-        window.setPrefWidth(1339);
-        window.setMaxWidth(1339);
-        window.setMinWidth(1339);
+        // ФИКСИРОВАННЫЕ РАЗМЕРЫ
+        window.setPrefWidth(1400);
+        window.setMaxWidth(1400);
+        window.setMinWidth(1400);
+
+        window.setPrefHeight(800);
+        window.setMaxHeight(800);
+        window.setMinHeight(800);
+
         window.setPadding(new Insets(52));
         window.setSpacing(38);
         window.setAlignment(Pos.TOP_CENTER);
-
-        StackPane.setAlignment(window, Pos.CENTER);
 
         // ================= CLOSE BUTTON (КРЕСТИК В ПРАВОМ ВЕРХНЕМ УГЛУ) =================
         Button closeButton = new Button("Х");
@@ -42,13 +47,14 @@ public class SettingsPanel extends StackPane {
         HBox topBox = new HBox();
         topBox.setAlignment(Pos.TOP_RIGHT);
         topBox.getChildren().add(closeButton);
+        topBox.setTranslateY(20);
 
         // ================= TITLE =================
         Label title = new Label("НАСТРОЙКИ");
         title.getStyleClass().add("settings-title");
         title.setMaxWidth(Double.MAX_VALUE);
         title.setAlignment(Pos.CENTER);
-        VBox.setMargin(title, new Insets(-100, 0, 0, 0));
+        VBox.setMargin(title, new Insets(-150, 0, 0, 0));
 
         // ================= GRID =================
         GridPane grid = new GridPane();
@@ -104,16 +110,16 @@ public class SettingsPanel extends StackPane {
         // =====================================================
         grid.add(createSectionLabel("Музыка"), 0, row);
 
-        ToggleButton musicOn = new ToggleButton("Вкл");
         ToggleButton musicOff = new ToggleButton("Выкл");
+        ToggleButton musicOn = new ToggleButton("Вкл");
 
-        musicOn.getStyleClass().add("settings-button");
         musicOff.getStyleClass().add("settings-button");
-        musicOn.setPrefSize(182, 72);
+        musicOn.getStyleClass().add("settings-button");
         musicOff.setPrefSize(182, 72);
+        musicOn.setPrefSize(182, 72);
         musicOn.setSelected(true);
 
-        HBox musicButtons = new HBox(23, musicOn, musicOff);
+        HBox musicButtons = new HBox(290, musicOff, musicOn);
         musicButtons.setAlignment(Pos.CENTER_LEFT);
 
         Slider musicSlider = createSlider(
@@ -145,16 +151,16 @@ public class SettingsPanel extends StackPane {
         // =====================================================
         grid.add(createSectionLabel("Звук"), 0, row);
 
-        ToggleButton soundOn = new ToggleButton("Вкл");
         ToggleButton soundOff = new ToggleButton("Выкл");
+        ToggleButton soundOn = new ToggleButton("Вкл");
 
-        soundOn.getStyleClass().add("settings-button");
         soundOff.getStyleClass().add("settings-button");
-        soundOn.setPrefSize(182, 72);
+        soundOn.getStyleClass().add("settings-button");
         soundOff.setPrefSize(182, 72);
+        soundOn.setPrefSize(182, 72);
         soundOn.setSelected(true);
 
-        HBox soundButtons = new HBox(23, soundOn, soundOff);
+        HBox soundButtons = new HBox(290, soundOff, soundOn);
         soundButtons.setAlignment(Pos.CENTER_LEFT);
 
         Slider soundSlider = createSlider(
@@ -191,12 +197,18 @@ public class SettingsPanel extends StackPane {
                         .toExternalForm()
         );
 
-        // Центрирование при изменении размера
+        // ================= ЦЕНТРИРОВАНИЕ ПРИ ИЗМЕНЕНИИ РАЗМЕРА =================
         widthProperty().addListener((obs, old, newVal) -> {
             window.setLayoutX((newVal.doubleValue() - window.getPrefWidth()) / 2);
         });
         heightProperty().addListener((obs, old, newVal) -> {
             window.setLayoutY((newVal.doubleValue() - window.getPrefHeight()) / 2);
+        });
+
+        // ПРИНУДИТЕЛЬНОЕ ПРИМЕНЕНИЕ ЦЕНТРИРОВАНИЯ ПРИ ЗАГРУЗКЕ
+        Platform.runLater(() -> {
+            window.setLayoutX((getWidth() - window.getPrefWidth()) / 2);
+            window.setLayoutY((getHeight() - window.getPrefHeight()) / 2);
         });
     }
 
