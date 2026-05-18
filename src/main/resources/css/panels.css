@@ -1,88 +1,74 @@
 /* =========================================================
-   PANEL BASE (серо-прозрачная игровая панель)
+   RULES PANEL ROOT
    ========================================================= */
-.panel-root {
-    -fx-background-color: rgba(54, 53, 52, 0.78);
-
-    -fx-background-radius: 30;
-    -fx-border-radius: 30;
-
-    -fx-border-color: #B7B7B7;
-    -fx-border-width: 2;
-
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 30, 0.4, 0, 6);
+.rules-panel {
+    -fx-background-color: rgba(245,235,220,0.22);
+    -fx-background-radius: 60;
+    -fx-border-radius: 60;
+    -fx-border-color: rgba(255,255,255,0.20);
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 74, 0.20, 0, 18);
 }
 
-
 /* =========================================================
-   TEXT STYLE
+   TITLE & TEXT STYLES — выравнивание по центру
    ========================================================= */
-.rule-title {
-    -fx-fill: white;
-    -fx-font-size: 34px;
+.rules-title {
+    -fx-fill: #FFFFFF;
+    -fx-font-size: 62px;
     -fx-font-weight: bold;
+    -fx-font-family: 'Segoe UI';
+    -fx-text-alignment: center; /* Центрирование заголовка */
 }
 
-.rule-text {
-    -fx-fill: white;
-    -fx-font-size: 19px;
+.rules-text {
+    -fx-fill: #FFFFFF;
+    -fx-font-size: 28px;
+    -fx-font-family: 'Segoe UI';
+    -fx-line-spacing: 14;
+    -fx-text-alignment: center; /* Центрирование основного текста */
+    -fx-text-overrun: ellipsis;
 }
-
 
 /* =========================================================
-   SCROLLPANE (визуально скрыт, но работает)
+   SEPARATOR AS TEXT — белая, жирная, длинная, по центру
    ========================================================= */
-
-.scroll-pane {
-    -fx-background-color: transparent;
-    -fx-padding: 0;
+.rules-separator-text {
+    -fx-fill: #FFFFFF;
+    -fx-font-family: 'Segoe UI';
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-line-spacing: 12;
+    -fx-text-alignment: center; /* Центрирование линии */
+    -fx-opacity: 0.9;
 }
-
-/* убираем фон viewport */
-.scroll-pane > .viewport {
-    -fx-background-color: transparent;
-}
-
 
 /* =========================================================
-   SCROLLBAR (полностью скрываем)
+   SCROLLPANE — тонкий белый скроллбар
    ========================================================= */
-
-/* вертикальный скроллбар */
-.scroll-bar:vertical {
-    -fx-background-color: transparent;
-    -fx-opacity: 0;
-    -fx-pref-width: 0;
-}
-
-/* горизонтальный (на всякий случай) */
-.scroll-bar:horizontal {
-    -fx-background-color: transparent;
-    -fx-opacity: 0;
-    -fx-pref-height: 0;
-}
-
-
-/* трек */
-.scroll-bar:vertical .track {
+.rules-scroll {
     -fx-background-color: transparent;
 }
 
-/* ползунок */
-.scroll-bar:vertical .thumb {
+.rules-scroll > .viewport {
     -fx-background-color: transparent;
 }
 
-/* hover */
-.scroll-bar:vertical .thumb:hover {
+.rules-scroll .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-padding: 2;
+}
+
+.rules-scroll .scroll-bar:vertical .track {
     -fx-background-color: transparent;
 }
 
+.rules-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(255,255,255,0.3);
+    -fx-background-radius: 4;
+    -fx-opacity: 0.7;
+}
 
-/* кнопки стрелок */
-.scroll-bar .increment-button,
-.scroll-bar .decrement-button {
-    -fx-background-color: transparent;
-    -fx-padding: 0;
-    -fx-opacity: 0;
+.rules-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: rgba(255,255,255,0.5);
 }

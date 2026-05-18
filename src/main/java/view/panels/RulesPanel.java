@@ -4,136 +4,148 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Insets;
 
 public class RulesPanel extends StackPane {
 
     public RulesPanel() {
-
         setPrefSize(1368, 1032);
-        getStyleClass().add("panel-root");
+        getStyleClass().add("rules-panel");
 
         VBox content = new VBox();
-        content.setSpacing(24);
-        content.setPadding(new Insets(70, 80, 70, 80));
-        content.setAlignment(Pos.TOP_LEFT);
+        content.setSpacing(20);
+        content.setAlignment(Pos.TOP_CENTER);
+        content.setPadding(new Insets(60, 80, 60, 80));
 
         Text title = new Text("КРЕСТИКИ-НОЛИКИ");
-        title.getStyleClass().add("rule-title");
+        title.getStyleClass().add("rules-title");
 
-        Text rules = new Text("""
-Это пошаговая логическая игра для двух игроков.
-
-━━━━━━━━━━━━━━━━━━━━
-
+        content.getChildren().addAll(
+                title,
+                separatorLine(),
+                textBlock("Это пошаговая логическая игра для двух игроков."),
+                separatorLine(),
+                textBlock("""
 🎮 РЕЖИМЫ ИГРЫ
 
 Доступны два режима:
+
 • 3×3 — классический режим
 • 9×9 — расширенный режим
 
 Также можно играть:
 • против другого игрока
-• против бота
+• против бота"""),
+                separatorLine(),
+                textBlock("""
+🔹 РЕЖИМ 3×3
 
-━━━━━━━━━━━━━━━━━━━━
+Цель игры — собрать 3 символа подряд:
 
-🔹 3×3 РЕЖИМ
-
-Цель: собрать 3 символа подряд.
-
-• горизонталь
-• вертикаль
-• диагональ
+• по горизонтали
+• по вертикали
+• по диагонали
 
 Игроки ходят по очереди:
+
 • X ходит первым
 • O ходит вторым
 
-Нельзя ставить в занятую клетку.
+Нельзя ставить символ в занятую клетку.
 
 🏆 Победа:
-3 символа подряд.
+Первый, кто собрал линию из 3 символов.
 
 🤝 Ничья:
-если поле заполнено.
+Если поле заполнено и победителя нет."""),
+                separatorLine(),
+                textBlock("""
+🔹 РЕЖИМ 9×9
 
-━━━━━━━━━━━━━━━━━━━━
-
-🔹 9×9 РЕЖИМ
-
-Цель: 5 символов подряд.
+Цель — собрать 5 символов подряд:
 
 • горизонталь
 • вертикаль
 • диагональ
 
 Особенности:
+
 • больше поле
 • больше стратегия
+• больше времени на игру
 
 🏆 Победа:
-5 подряд символов.
+5 символов подряд.
 
-━━━━━━━━━━━━━━━━━━━━
+🤝 Ничья:
+если поле заполнено и линии нет."""),
+                separatorLine(),
+                textBlock("""
+🤖 ИГРА ПРОТИВ БОТА
 
-🤖 БОТ
+Бот:
 
 • делает ход автоматически
-• блокирует игрока
-• строит линию
-
-━━━━━━━━━━━━━━━━━━━━
-
-💬 ЧАТ
+• пытается собрать линию
+• блокирует игрока"""),
+                separatorLine(),
+                textBlock("""
+💬 ИГРОВОЙ ЧАТ
 
 Можно:
+
 • общаться
-• искать игроков
-• обсуждать матчи
+• искать соперников
+• обсуждать стратегии
+• договариваться о матчах
 
 Запрещено:
+
 • оскорбления
 • спам
 • реклама
-
-━━━━━━━━━━━━━━━━━━━━
-
+• токсичное поведение"""),
+                separatorLine(),
+                textBlock("""
 🏆 ДОПОЛНИТЕЛЬНО
 
+В игре есть:
+
 • профиль игрока
-• статистика
+• статистика побед
 • рейтинг
 • достижения
-• магазин
-""");
-
-        rules.setWrappingWidth(900);
-        rules.getStyleClass().add("rule-text");
-
-        content.getChildren().addAll(title, rules);
+• магазин оформления""")
+        );
 
         ScrollPane scroll = new ScrollPane(content);
-
-        scroll.setPrefSize(1000, 950);
-        scroll.setLayoutX(180);
-        scroll.setLayoutY(40);
-
         scroll.setFitToWidth(true);
         scroll.setPannable(true);
-
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-
-        scroll.getStyleClass().add("scroll-pane");
-
-        scroll.setClip(new javafx.scene.shape.Rectangle(1000, 950));
+        scroll.getStyleClass().add("rules-scroll");
 
         getChildren().add(scroll);
 
         getStylesheets().add(
                 getClass().getResource("/css/panels.css").toExternalForm()
         );
+    }
+
+    // Текстовый блок — центрированный
+    private Text textBlock(String text) {
+        Text t = new Text(text);
+        t.getStyleClass().add("rules-text");
+        t.setWrappingWidth(1100);
+        return t;
+    }
+
+    // Линия из символов — центрируется автоматически через выравнивание
+    private Text separatorLine() {
+        Text line = new Text("─".repeat(100));
+        line.getStyleClass().add("rules-separator-text");
+        line.setWrappingWidth(1100);
+        return line;
     }
 }
