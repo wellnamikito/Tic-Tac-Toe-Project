@@ -14,7 +14,7 @@ package Backend;
  * - отправка сетевых сообщений клиентам.
  *
  * Поддерживаются игровые поля:
- * 3x3, 4x4, 5x5 и другие размеры.
+ * 3x3 и 9x9.
  */
 public class GameSession {
 
@@ -27,17 +27,30 @@ public class GameSession {
     private boolean isPlayer1Turn = true;
     private boolean gameOver = false;
 
-    public GameSession(CLientHandler player1, CLientHandler player2, int size) {
+    public GameSession(CLientHandler player1,
+                       CLientHandler player2,
+                       int size) {
 
         this.player1 = player1;
         this.player2 = player2;
+
+        // поддержка только 3x3 и 9x9
+        if (size != 3 && size != 9) {
+
+            throw new IllegalArgumentException(
+                    "Only 3x3 and 9x9 boards are supported"
+            );
+        }
+
         this.size = size;
 
         board = new char[size][size];
 
         // заполнение поля
         for (int i = 0; i < size; i++) {
+
             for (int j = 0; j < size; j++) {
+
                 board[i][j] = ' ';
             }
         }
@@ -71,13 +84,15 @@ public class GameSession {
     // HANDLE MESSAGES
     // =========================
 
-    public void handleMessage(CLientHandler sender, String message) {
+    public void handleMessage(CLientHandler sender,
+                              String message) {
 
         // =========================
         // RESTART
         // =========================
 
         if (message.equals("RESTART")) {
+
             restartGame();
             return;
         }
@@ -112,6 +127,7 @@ public class GameSession {
 
         // защита от кривых данных
         if (parts.length < 3) {
+
             sender.sendMessage("INVALID");
             return;
         }
@@ -120,13 +136,16 @@ public class GameSession {
         int y = Integer.parseInt(parts[2]);
 
         // проверка границ
-        if (x < 0 || x >= size || y < 0 || y >= size) {
+        if (x < 0 || x >= size ||
+                y < 0 || y >= size) {
+
             sender.sendMessage("INVALID");
             return;
         }
 
         // клетка занята
         if (board[x][y] != ' ') {
+
             sender.sendMessage("INVALID");
             return;
         }
@@ -192,6 +211,7 @@ public class GameSession {
         for (int j = 0; j < size; j++) {
 
             if (board[x][j] != symbol) {
+
                 win = false;
                 break;
             }
@@ -205,6 +225,7 @@ public class GameSession {
         for (int i = 0; i < size; i++) {
 
             if (board[i][y] != symbol) {
+
                 win = false;
                 break;
             }
@@ -220,6 +241,7 @@ public class GameSession {
             for (int i = 0; i < size; i++) {
 
                 if (board[i][i] != symbol) {
+
                     win = false;
                     break;
                 }
@@ -236,6 +258,7 @@ public class GameSession {
             for (int i = 0; i < size; i++) {
 
                 if (board[i][size - 1 - i] != symbol) {
+
                     win = false;
                     break;
                 }
