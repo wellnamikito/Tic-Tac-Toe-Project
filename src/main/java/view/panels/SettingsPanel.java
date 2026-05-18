@@ -10,6 +10,9 @@ import manager.ScreenManager;
 
 public class SettingsPanel extends StackPane {
 
+    // Хранит текущее разрешение только в памяти (в рамках сессии)
+    private static String CURRENT_RESOLUTION = "1920x1080";
+
     public SettingsPanel() {
 
         // ================= BACKDROP =================
@@ -18,11 +21,10 @@ public class SettingsPanel extends StackPane {
         getStyleClass().add("settings-overlay");
         setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
-        // ================= WINDOW (С ФИКСИРОВАННЫМИ РАЗМЕРАМИ ДЛЯ ЦЕНТРИРОВАНИЯ) =================
+        // ================= WINDOW (ФИКСИРОВАННЫЙ РАЗМЕР) =================
         VBox window = new VBox();
         window.getStyleClass().add("settings-window");
 
-        // ФИКСИРОВАННЫЕ РАЗМЕРЫ
         window.setPrefWidth(1400);
         window.setMaxWidth(1400);
         window.setMinWidth(1400);
@@ -35,13 +37,11 @@ public class SettingsPanel extends StackPane {
         window.setSpacing(38);
         window.setAlignment(Pos.TOP_CENTER);
 
-        // ================= CLOSE BUTTON (КРЕСТИК В ПРАВОМ ВЕРХНЕМ УГЛУ) =================
+        // ================= CLOSE BUTTON =================
         Button closeButton = new Button("Х");
         closeButton.getStyleClass().add("settings-close");
         closeButton.setPrefSize(60, 60);
         closeButton.setCursor(javafx.scene.Cursor.HAND);
-
-        // ДЕЙСТВИЕ ПРИ НАЖАТИИ - ЗАКРЫВАЕТ ПАНЕЛЬ
         closeButton.setOnAction(e -> this.setVisible(false));
 
         HBox topBox = new HBox();
@@ -78,10 +78,33 @@ public class SettingsPanel extends StackPane {
 
         ComboBox<String> resolution = new ComboBox<>();
         resolution.getItems().addAll("1920x1080", "1600x900", "1280x720");
-        resolution.setValue("1920x1080");
+
+        // Устанавливаем последнее значение из памяти
+        resolution.setValue(CURRENT_RESOLUTION);
+
         resolution.getStyleClass().add("settings-combo");
         resolution.setPrefWidth(484);
         resolution.setPrefHeight(62);
+
+        // Сохраняем в памяти при выборе
+        resolution.setOnAction(e -> {
+            String selected = resolution.getValue();
+            String[] parts = selected.split("x");
+            int width = Integer.parseInt(parts[0]);
+            int height = Integer.parseInt(parts[1]);
+
+            // Сохраняем в статическое поле (только в сессии)
+            CURRENT_RESOLUTION = selected;
+
+            // Меняем размер окна
+            ScreenManager.setWindowSize(width, height);
+
+            // Центрируем панель
+            Platform.runLater(() -> {
+                window.setLayoutX((getWidth() - window.getPrefWidth()) / 2);
+                window.setLayoutY((getHeight() - window.getPrefHeight()) / 2);
+            });
+        });
 
         grid.add(resolution, 1, row++);
         grid.add(createSeparator(), 0, row++, 2, 1);
@@ -197,7 +220,7 @@ public class SettingsPanel extends StackPane {
                         .toExternalForm()
         );
 
-        // ================= ЦЕНТРИРОВАНИЕ ПРИ ИЗМЕНЕНИИ РАЗМЕРА =================
+        // ================= ЦЕНТРИРОВАНИЕ =================
         widthProperty().addListener((obs, old, newVal) -> {
             window.setLayoutX((newVal.doubleValue() - window.getPrefWidth()) / 2);
         });
@@ -205,7 +228,6 @@ public class SettingsPanel extends StackPane {
             window.setLayoutY((newVal.doubleValue() - window.getPrefHeight()) / 2);
         });
 
-        // ПРИНУДИТЕЛЬНОЕ ПРИМЕНЕНИЕ ЦЕНТРИРОВАНИЯ ПРИ ЗАГРУЗКЕ
         Platform.runLater(() -> {
             window.setLayoutX((getWidth() - window.getPrefWidth()) / 2);
             window.setLayoutY((getHeight() - window.getPrefHeight()) / 2);

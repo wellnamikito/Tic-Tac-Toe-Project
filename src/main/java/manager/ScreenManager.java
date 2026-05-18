@@ -37,5 +37,11 @@ public class ScreenManager {
 
         return newState;
     }
-
+    public static void setWindowSize(double width, double height) {
+        if (stage == null) return;
+        stage.setFullScreen(false);
+        stage.setWidth(width);
+        stage.setHeight(height);
+        stage.centerOnScreen();
+    }
 }
