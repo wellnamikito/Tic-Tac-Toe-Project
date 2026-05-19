@@ -1,7 +1,7 @@
 /* =========================================================
-   RULES PANEL ROOT
+   PANEL BASE (светло-бежевый полупрозрачный, как у настроек)
    ========================================================= */
-.rules-panel {
+.panel-root {
     -fx-background-color: rgba(245,235,220,0.22);
     -fx-background-radius: 60;
     -fx-border-radius: 60;
@@ -11,64 +11,71 @@
 }
 
 /* =========================================================
-   TITLE & TEXT STYLES — выравнивание по центру
+   TEXT STYLE
    ========================================================= */
-.rules-title {
+.rule-title {
     -fx-fill: #FFFFFF;
-    -fx-font-size: 62px;
+    -fx-font-size: 86px;
     -fx-font-weight: bold;
     -fx-font-family: 'Segoe UI';
-    -fx-text-alignment: center; /* Центрирование заголовка */
 }
 
-.rules-text {
+.rule-text {
     -fx-fill: #FFFFFF;
-    -fx-font-size: 28px;
+    -fx-font-size: 34px;
     -fx-font-family: 'Segoe UI';
-    -fx-line-spacing: 14;
-    -fx-text-alignment: center; /* Центрирование основного текста */
-    -fx-text-overrun: ellipsis;
 }
 
 /* =========================================================
-   SEPARATOR AS TEXT — белая, жирная, длинная, по центру
+   SCROLLPANE
    ========================================================= */
-.rules-separator-text {
-    -fx-fill: #FFFFFF;
-    -fx-font-family: 'Segoe UI';
-    -fx-font-size: 9px;
-    -fx-font-weight: bold;
-    -fx-line-spacing: 12;
-    -fx-text-alignment: center; /* Центрирование линии */
-    -fx-opacity: 0.9;
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
 }
 
 /* =========================================================
-   SCROLLPANE — тонкий белый скроллбар
+   SCROLLBAR (ПРОЗРАЧНЫЙ С БЕЛЫМ ПОЛЗУНКОМ)
    ========================================================= */
-.rules-scroll {
+.scroll-bar:vertical {
     -fx-background-color: transparent;
+    -fx-pref-width: 10;
+    -fx-padding: 0;
 }
 
-.rules-scroll > .viewport {
+.scroll-bar:horizontal {
     -fx-background-color: transparent;
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
 }
 
-.rules-scroll .scroll-bar:vertical {
+.scroll-bar:vertical .track {
     -fx-background-color: transparent;
-    -fx-padding: 2;
+    -fx-background-radius: 5;
 }
 
-.rules-scroll .scroll-bar:vertical .track {
+.scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(255,255,255,0.4);
+    -fx-background-radius: 5;
+}
+
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: rgba(255,255,255,0.7);
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
     -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-opacity: 0;
 }
 
-.rules-scroll .scroll-bar:vertical .thumb {
-    -fx-background-color: rgba(255,255,255,0.3);
-    -fx-background-radius: 4;
-    -fx-opacity: 0.7;
-}
-
-.rules-scroll .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: rgba(255,255,255,0.5);
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
 }
