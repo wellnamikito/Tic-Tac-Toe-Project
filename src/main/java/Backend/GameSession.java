@@ -10,7 +10,7 @@ package Backend;
  * - проверка победы и ничьи;
  * - синхронизация состояния игры;
  * - обработка перезапуска игры;
- * - поддержка внутриигрового чата;
+ * - поддержка общего и личного чата;
  * - отправка сетевых сообщений клиентам.
  *
  * Поддерживаются игровые поля:
@@ -98,15 +98,69 @@ public class GameSession {
         }
 
         // =========================
-        // CHAT
+        // GLOBAL CHAT
         // =========================
 
-        if (message.startsWith("CHAT")) {
+        if (message.startsWith("CHAT_ALL")) {
 
-            String chatMessage = message.substring(5);
+            String text = message.substring(9);
 
-            getOpponent(sender)
-                    .sendMessage("CHAT " + chatMessage);
+            String formatted =
+                    "[Общий] [" +
+                            sender.getNickname() +
+                            "]: " +
+                            text;
+
+            player1.sendMessage(formatted);
+            player2.sendMessage(formatted);
+
+            return;
+        }
+
+        // =========================
+        // PRIVATE CHAT
+        // =========================
+
+        if (message.startsWith("CHAT_PRIVATE")) {
+
+            String[] parts = message.split(" ", 3);
+
+            if (parts.length < 3) return;
+
+            String targetNick = parts[1];
+            String text = parts[2];
+
+            CLientHandler target = null;
+
+            if (player1.getNickname().equals(targetNick)) {
+                target = player1;
+            }
+
+            if (player2.getNickname().equals(targetNick)) {
+                target = player2;
+            }
+
+            if (target == null) {
+
+                sender.sendMessage("USER_NOT_FOUND");
+                return;
+            }
+
+            // сообщение получателю
+            target.sendMessage(
+                    "[ЛС] [" +
+                            sender.getNickname() +
+                            "]: " +
+                            text
+            );
+
+            // сообщение отправителю
+            sender.sendMessage(
+                    "[ВЫ -> " +
+                            targetNick +
+                            "]: " +
+                            text
+            );
 
             return;
         }
@@ -344,6 +398,18 @@ public class GameSession {
 
             player2.sendMessage("TURN YOUR");
             player1.sendMessage("TURN WAIT");
+        }
+    }
+
+    public void playerDisconnected(CLientHandler player) {
+
+        gameOver = true;
+
+        CLientHandler opponent = getOpponent(player);
+
+        if (opponent != null) {
+
+            opponent.sendMessage("OPPONENT_LEFT");
         }
     }
 
