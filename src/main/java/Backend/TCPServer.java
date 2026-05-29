@@ -4,14 +4,63 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+/**
+ * TCPServer — основной серверный класс приложения.
+ *
+ * <p>Отвечает за:
+ * <ul>
+ *   <li>приём TCP-подключений от клиентов</li>
+ *   <li>управление подключёнными пользователями</li>
+ *   <li>формирование игровых сессий между игроками</li>
+ *   <li>рассылку сообщений всем клиентам</li>
+ *   <li>контроль лимитов сервера (макс. число игроков)</li>
+ * </ul>
+ *
+ * <p>Логика работы:
+ * сервер принимает клиентов, добавляет их в очередь ожидания,
+ * и автоматически создаёт GameSession, когда набираются 2 игрока.
+ */
 public class TCPServer {
-    private ConfigManager config; // Менеджер настроек
+
+    /**
+     * Менеджер конфигурации сервера.
+     * Используется для получения:
+     * - порта сервера
+     * - максимального числа клиентов
+     * - размера игрового поля
+     */
+    private ConfigManager config;
+
+    /**
+     * Основной TCP-серверный сокет, принимающий подключения клиентов.
+     */
     private ServerSocket serverSocket;
+
+    /**
+     * Список всех активных подключённых клиентов.
+     */
     private List<CLientHandler> clients = new ArrayList<>();
+
+    /**
+     * Очередь игроков, ожидающих начала игры.
+     * Когда набирается 2 игрока — создаётся GameSession.
+     */
     private List<CLientHandler> waitingPlayers = new ArrayList<>();
 
+    /**
+     * Запуск TCP-сервера.
+     *
+     * <p>Выполняет:
+     * <ul>
+     *   <li>загрузку конфигурации</li>
+     *   <li>запуск ServerSocket</li>
+     *   <li>ожидание подключений клиентов</li>
+     *   <li>создание игровых сессий при наличии 2 игроков</li>
+     * </ul>
+     *
+     * <p>Работает в бесконечном цикле.
+     */
     public void start() {
-        // Инициализируем настройки перед запуском сервера
         config = new ConfigManager();
         int port = config.getPort();
 
@@ -27,7 +76,7 @@ public class TCPServer {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("New client attempting to connect: " + clientSocket.getInetAddress());
 
-                // Проверка лимита клиентов из конфига
+                // Проверка лимита клиентов
                 if (clients.size() >= config.getMaxClients()) {
                     System.out.println("Connection rejected: Server is full (" + config.getMaxClients() + ")");
                     clientSocket.close();
@@ -41,12 +90,11 @@ public class TCPServer {
                 waitingPlayers.add(client);
                 System.out.println("Client connected. Total active clients: " + clients.size());
 
-                // Если набралось 2 игрока — создаём сессию
+                // Если есть 2 игрока — создаём игровую сессию
                 if (waitingPlayers.size() >= 2) {
                     CLientHandler p1 = waitingPlayers.remove(0);
                     CLientHandler p2 = waitingPlayers.remove(0);
 
-                    // Передаем размер поля из конфигурации
                     int boardSize = config.getBoardSize();
                     new GameSession(p1, p2, boardSize);
 
@@ -59,22 +107,31 @@ public class TCPServer {
         }
     }
 
-
-     // Отправка сообщения всем подключенным клиентам.
+    /**
+     * Отправляет сообщение всем подключённым клиентам.
+     *
+     * @param message текст сообщения
+     */
     public void broadcast(String message) {
         for (CLientHandler client : clients) {
             client.sendMessage(message);
         }
     }
 
-    // Удаление клиента из списков при отключении.
-
+    /**
+     * Удаляет клиента из системы при отключении.
+     *
+     * @param client клиент, который отключился
+     */
     public void removeClient(CLientHandler client) {
         clients.remove(client);
         waitingPlayers.remove(client);
         System.out.println("Client disconnected. Remaining clients: " + clients.size());
     }
 
+    /**
+     * Точка входа в серверное приложение.
+     */
     public static void main(String[] args) {
         new TCPServer().start();
     }

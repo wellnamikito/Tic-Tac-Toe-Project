@@ -1,20 +1,33 @@
 package Backend;
 
 /**
- * GameSession отвечает за игровую сессию между двумя игроками.
+ * GameSession — управление игровой сессией между двумя игроками.
  *
- * Функционал класса:
- * - создание игровой сессии;
- * - хранение игрового поля;
- * - обработка ходов игроков;
- * - проверка победы и ничьи;
- * - синхронизация состояния игры;
- * - обработка перезапуска игры;
- * - поддержка общего и личного чата;
- * - отправка сетевых сообщений клиентам.
+ * <p>📌 Это центральный класс игровой логики, который:
+ * <ul>
+ *   <li>управляет состоянием игры</li>
+ *   <li>обрабатывает ходы игроков</li>
+ *   <li>проверяет победу и ничью</li>
+ *   <li>обрабатывает чат (общий и приватный)</li>
+ *   <li>синхронизирует состояние между клиентами</li>
+ *   <li>отправляет события фронтенду через TCP</li>
+ * </ul>
  *
- * Поддерживаются игровые поля:
- * 3x3 и 9x9.
+ * <p>📡 Протокол сообщений (для фронтенда):
+ * <ul>
+ *   <li>START — начало игры</li>
+ *   <li>ROLE X / ROLE O — назначение роли</li>
+ *   <li>SIZE n — размер поля</li>
+ *   <li>STATE — текущее состояние поля</li>
+ *   <li>TURN YOUR / TURN WAIT — управление ходом</li>
+ *   <li>WIN / LOSE / DRAW — результат игры</li>
+ *   <li>INVALID — некорректный ход</li>
+ *   <li>NOT YOUR TURN — ход вне очереди</li>
+ *   <li>RESTART — перезапуск игры</li>
+ *   <li>OPPONENT_LEFT — соперник отключился</li>
+ * </ul>
+ *
+ * <p>📌 Поддерживаемые размеры поля: 3x3 и 9x9</p>
  */
 public class GameSession {
 
@@ -27,6 +40,21 @@ public class GameSession {
     private boolean isPlayer1Turn = true;
     private boolean gameOver = false;
 
+    /**
+     * Создаёт игровую сессию между двумя игроками.
+     *
+     * <p>📌 Автоматически:
+     * <ul>
+     *   <li>инициализирует поле</li>
+     *   <li>назначает роли X и O</li>
+     *   <li>запускает игру</li>
+     * </ul>
+     *
+     * @param player1 первый игрок
+     * @param player2 второй игрок
+     * @param size размер поля (3 или 9)
+     * @throws IllegalArgumentException если размер поля не 3 или 9
+     */
     public GameSession(CLientHandler player1,
                        CLientHandler player2,
                        int size) {
@@ -36,7 +64,6 @@ public class GameSession {
 
         // поддержка только 3x3 и 9x9
         if (size != 3 && size != 9) {
-
             throw new IllegalArgumentException(
                     "Only 3x3 and 9x9 boards are supported"
             );
@@ -48,9 +75,7 @@ public class GameSession {
 
         // заполнение поля
         for (int i = 0; i < size; i++) {
-
             for (int j = 0; j < size; j++) {
-
                 board[i][j] = ' ';
             }
         }
@@ -65,6 +90,12 @@ public class GameSession {
     // START GAME
     // =========================
 
+    /**
+     * Запускает игровую сессию.
+     *
+     * 📡 Отправляет клиентам:
+     * START, ROLE, SIZE, TURN, STATE
+     */
     private void startGame() {
 
         player1.sendMessage("START");
@@ -84,23 +115,31 @@ public class GameSession {
     // HANDLE MESSAGES
     // =========================
 
+    /**
+     * Обрабатывает сообщения от клиентов.
+     *
+     * <p>📌 Поддерживаемые команды:
+     * <ul>
+     *   <li>MOVE x y — сделать ход</li>
+     *   <li>CHAT_ALL text — общий чат</li>
+     *   <li>CHAT_PRIVATE nick text — личное сообщение</li>
+     *   <li>RESTART — перезапуск игры</li>
+     * </ul>
+     *
+     * @param sender игрок-отправитель
+     * @param message сообщение клиента
+     */
     public void handleMessage(CLientHandler sender,
                               String message) {
 
-        // =========================
-        // RESTART
-        // =========================
-
         if (message.equals("RESTART")) {
-
             restartGame();
             return;
         }
 
         // =========================
-        // GLOBAL CHAT
+        // CHAT ALL
         // =========================
-
         if (message.startsWith("CHAT_ALL")) {
 
             String text = message.substring(9);
@@ -120,11 +159,9 @@ public class GameSession {
         // =========================
         // PRIVATE CHAT
         // =========================
-
         if (message.startsWith("CHAT_PRIVATE")) {
 
             String[] parts = message.split(" ", 3);
-
             if (parts.length < 3) return;
 
             String targetNick = parts[1];
@@ -132,56 +169,30 @@ public class GameSession {
 
             CLientHandler target = null;
 
-            if (player1.getNickname().equals(targetNick)) {
-                target = player1;
-            }
-
-            if (player2.getNickname().equals(targetNick)) {
-                target = player2;
-            }
+            if (player1.getNickname().equals(targetNick)) target = player1;
+            if (player2.getNickname().equals(targetNick)) target = player2;
 
             if (target == null) {
-
                 sender.sendMessage("USER_NOT_FOUND");
                 return;
             }
 
-            // сообщение получателю
-            target.sendMessage(
-                    "[ЛС] [" +
-                            sender.getNickname() +
-                            "]: " +
-                            text
-            );
-
-            // сообщение отправителю
-            sender.sendMessage(
-                    "[ВЫ -> " +
-                            targetNick +
-                            "]: " +
-                            text
-            );
+            target.sendMessage("[ЛС] [" + sender.getNickname() + "]: " + text);
+            sender.sendMessage("[ВЫ -> " + targetNick + "]: " + text);
 
             return;
         }
-
-        // =========================
-        // GAME OVER
-        // =========================
 
         if (gameOver) return;
 
         // =========================
         // MOVE
         // =========================
-
         if (!message.startsWith("MOVE")) return;
 
         String[] parts = message.split(" ");
 
-        // защита от кривых данных
         if (parts.length < 3) {
-
             sender.sendMessage("INVALID");
             return;
         }
@@ -189,22 +200,16 @@ public class GameSession {
         int x = Integer.parseInt(parts[1]);
         int y = Integer.parseInt(parts[2]);
 
-        // проверка границ
-        if (x < 0 || x >= size ||
-                y < 0 || y >= size) {
-
+        if (x < 0 || x >= size || y < 0 || y >= size) {
             sender.sendMessage("INVALID");
             return;
         }
 
-        // клетка занята
         if (board[x][y] != ' ') {
-
             sender.sendMessage("INVALID");
             return;
         }
 
-        // проверка очереди
         if (sender == player1 && !isPlayer1Turn ||
                 sender == player2 && isPlayer1Turn) {
 
@@ -212,38 +217,26 @@ public class GameSession {
             return;
         }
 
-        // делаем ход
         if (sender == player1) {
-
             board[x][y] = 'X';
             isPlayer1Turn = false;
-
         } else {
-
             board[x][y] = 'O';
             isPlayer1Turn = true;
         }
 
         sendState();
 
-        // проверка победы
         if (checkWin(x, y)) {
-
             sender.sendMessage("WIN");
-
-            getOpponent(sender)
-                    .sendMessage("LOSE");
-
+            getOpponent(sender).sendMessage("LOSE");
             gameOver = true;
             return;
         }
 
-        // проверка ничьи
         if (isDraw()) {
-
             player1.sendMessage("DRAW");
             player2.sendMessage("DRAW");
-
             gameOver = true;
             return;
         }
@@ -255,68 +248,39 @@ public class GameSession {
     // GAME LOGIC
     // =========================
 
+    /**
+     * Проверяет победу после хода.
+     *
+     * @return true — если игрок выиграл
+     */
     private boolean checkWin(int x, int y) {
-
         char symbol = board[x][y];
 
-        // строка
         boolean win = true;
 
-        for (int j = 0; j < size; j++) {
-
-            if (board[x][j] != symbol) {
-
-                win = false;
-                break;
-            }
-        }
+        for (int j = 0; j < size; j++)
+            if (board[x][j] != symbol) win = false;
 
         if (win) return true;
 
-        // столбец
         win = true;
-
-        for (int i = 0; i < size; i++) {
-
-            if (board[i][y] != symbol) {
-
-                win = false;
-                break;
-            }
-        }
+        for (int i = 0; i < size; i++)
+            if (board[i][y] != symbol) win = false;
 
         if (win) return true;
 
-        // главная диагональ
         if (x == y) {
-
             win = true;
-
-            for (int i = 0; i < size; i++) {
-
-                if (board[i][i] != symbol) {
-
-                    win = false;
-                    break;
-                }
-            }
+            for (int i = 0; i < size; i++)
+                if (board[i][i] != symbol) win = false;
 
             if (win) return true;
         }
 
-        // побочная диагональ
         if (x + y == size - 1) {
-
             win = true;
-
-            for (int i = 0; i < size; i++) {
-
-                if (board[i][size - 1 - i] != symbol) {
-
-                    win = false;
-                    break;
-                }
-            }
+            for (int i = 0; i < size; i++)
+                if (board[i][size - 1 - i] != symbol) win = false;
 
             if (win) return true;
         }
@@ -324,17 +288,15 @@ public class GameSession {
         return false;
     }
 
+    /**
+     * Проверяет ничью (если поле заполнено).
+     */
     private boolean isDraw() {
 
-        for (int i = 0; i < size; i++) {
-
-            for (int j = 0; j < size; j++) {
-
-                if (board[i][j] == ' ') {
+        for (int i = 0; i < size; i++)
+            for (int j = 0; j < size; j++)
+                if (board[i][j] == ' ')
                     return false;
-                }
-            }
-        }
 
         return true;
     }
@@ -343,15 +305,14 @@ public class GameSession {
     // RESTART
     // =========================
 
+    /**
+     * Перезапускает игру и очищает поле.
+     */
     private void restartGame() {
 
-        for (int i = 0; i < size; i++) {
-
-            for (int j = 0; j < size; j++) {
-
+        for (int i = 0; i < size; i++)
+            for (int j = 0; j < size; j++)
                 board[i][j] = ' ';
-            }
-        }
 
         gameOver = false;
         isPlayer1Turn = true;
@@ -367,19 +328,16 @@ public class GameSession {
     // NETWORK
     // =========================
 
+    /**
+     * Отправляет текущее состояние поля обоим игрокам.
+     */
     private void sendState() {
 
         StringBuilder sb = new StringBuilder();
 
-        for (int i = 0; i < size; i++) {
-
-            for (int j = 0; j < size; j++) {
-
-                sb.append(board[i][j] == ' '
-                        ? '_'
-                        : board[i][j]);
-            }
-        }
+        for (int i = 0; i < size; i++)
+            for (int j = 0; j < size; j++)
+                sb.append(board[i][j] == ' ' ? '_' : board[i][j]);
 
         String state = "STATE " + size + " " + sb;
 
@@ -387,20 +345,25 @@ public class GameSession {
         player2.sendMessage(state);
     }
 
+    /**
+     * Отправляет информацию о текущем ходе.
+     */
     private void sendTurn() {
 
         if (isPlayer1Turn) {
-
             player1.sendMessage("TURN YOUR");
             player2.sendMessage("TURN WAIT");
-
         } else {
-
             player2.sendMessage("TURN YOUR");
             player1.sendMessage("TURN WAIT");
         }
     }
 
+    /**
+     * Вызывается при отключении игрока.
+     *
+     * @param player отключившийся игрок
+     */
     public void playerDisconnected(CLientHandler player) {
 
         gameOver = true;
@@ -408,15 +371,14 @@ public class GameSession {
         CLientHandler opponent = getOpponent(player);
 
         if (opponent != null) {
-
             opponent.sendMessage("OPPONENT_LEFT");
         }
     }
 
+    /**
+     * Возвращает соперника игрока.
+     */
     private CLientHandler getOpponent(CLientHandler player) {
-
-        return (player == player1)
-                ? player2
-                : player1;
+        return (player == player1) ? player2 : player1;
     }
 }
