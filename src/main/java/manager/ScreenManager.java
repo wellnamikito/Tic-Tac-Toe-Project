@@ -2,13 +2,25 @@ package manager;
 
 import config.UIConfig;
 import javafx.stage.Stage;
+import javafx.application.Platform;
 
 public class ScreenManager {
 
     private static Stage stage;
 
+    // Флаг программного изменения размера
+    private static boolean changingResolution = false;
+
     public static void setStage(Stage s) {
         stage = s;
+    }
+
+    public static Stage getStage() {
+        return stage;
+    }
+
+    public static boolean isChangingResolution() {
+        return changingResolution;
     }
 
     public static void startFullscreen() {
@@ -37,11 +49,24 @@ public class ScreenManager {
 
         return newState;
     }
+
     public static void setWindowSize(double width, double height) {
+
         if (stage == null) return;
-        stage.setFullScreen(false);
-        stage.setWidth(width);
-        stage.setHeight(height);
-        stage.centerOnScreen();
+
+        changingResolution = true;
+
+        Platform.runLater(() -> {
+            try {
+                stage.setFullScreen(false);
+
+                stage.setWidth(width);
+                stage.setHeight(height);
+
+                stage.centerOnScreen();
+            } finally {
+                changingResolution = false;
+            }
+        });
     }
 }

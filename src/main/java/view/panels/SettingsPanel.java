@@ -84,6 +84,17 @@ public class SettingsPanel extends StackPane {
         resolution.getStyleClass().add("settings-combo");
         resolution.setPrefWidth(484);
         resolution.setPrefHeight(62);
+        resolution.setOnAction(e -> {
+
+            String[] size = resolution.getValue().split("x");
+
+            double w = Double.parseDouble(size[0]);
+            double h = Double.parseDouble(size[1]);
+
+            System.out.println("Selected resolution: " + w + "x" + h);
+
+            ScreenManager.setWindowSize(w, h);
+        });
 
         grid.add(resolution, 1, row++);
         grid.add(createSeparator(), 0, row++, 2, 1);
@@ -296,4 +307,6 @@ public class SettingsPanel extends StackPane {
             """);
         alert.showAndWait();
     }
+
+
 }

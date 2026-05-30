@@ -17,11 +17,11 @@ public class Main extends Application {
 
     private boolean updating = false;
     private boolean pending = false;
+    private boolean lockAspectRatio = true;
 
     @Override
     public void start(Stage stage) {
 
-        // Передаём Stage в SettingsPanel
         SettingsPanel.setStage(stage);
 
         MainMenuView view = new MainMenuView();
@@ -38,7 +38,6 @@ public class Main extends Application {
         stage.setMinWidth(960);
         stage.setMinHeight(540);
 
-        // Настройки окна
         stage.setIconified(false);
         stage.setAlwaysOnTop(false);
         stage.requestFocus();
@@ -52,7 +51,6 @@ public class Main extends Application {
         stage.heightProperty().addListener((obs, oldVal, newVal) ->
                 requestResize(stage, lastW, lastH));
 
-        // Обработка восстановления окна
         stage.showingProperty().addListener((obs, wasShowing, isShowing) -> {
             if (isShowing) {
                 stage.toFront();
@@ -62,21 +60,19 @@ public class Main extends Application {
 
         stage.show();
 
-        // Fullscreen запускается ПОСЛЕ show
         Platform.runLater(() -> {
             ScreenManager.startFullscreen();
             stage.toFront();
             stage.requestFocus();
         });
 
-        // Музыка
         AudioManager.playMusic("/audio/fff.mp3");
     }
 
     private void requestResize(Stage stage, double[] lastW, double[] lastH) {
 
-        if (updating) return;
-        if (pending) return;
+        if (ScreenManager.isChangingResolution()) return;
+        if (updating || pending) return;
 
         pending = true;
 
@@ -88,27 +84,36 @@ public class Main extends Application {
 
     private void applyResize(Stage stage, double[] lastW, double[] lastH) {
 
+        if (!lockAspectRatio) return; // <<< ВАЖНО
+
+        if (ScreenManager.isChangingResolution()) return;
+
         updating = true;
 
-        double w = stage.getWidth();
-        double h = stage.getHeight();
+        try {
+            double w = stage.getWidth();
+            double h = stage.getHeight();
 
-        double dw = Math.abs(w - lastW[0]);
-        double dh = Math.abs(h - lastH[0]);
+            double dw = Math.abs(w - lastW[0]);
+            double dh = Math.abs(h - lastH[0]);
 
-        if (dw > dh) {
-            stage.setHeight(w / RATIO);
-        } else {
-            stage.setWidth(h * RATIO);
+            if (dw > dh) {
+                stage.setHeight(w / RATIO);
+            } else {
+                stage.setWidth(h * RATIO);
+            }
+
+            lastW[0] = stage.getWidth();
+            lastH[0] = stage.getHeight();
+
+        } finally {
+            updating = false;
         }
-
-        lastW[0] = stage.getWidth();
-        lastH[0] = stage.getHeight();
-
-        updating = false;
     }
 
     public static void main(String[] args) {
         launch();
     }
+
+
 }
