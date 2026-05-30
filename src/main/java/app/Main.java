@@ -8,6 +8,7 @@ import javafx.stage.Stage;
 import manager.AudioManager;
 import manager.ScreenManager;
 import view.MainMenuView;
+import view.panels.SettingsPanel;
 
 public class Main extends Application {
 
@@ -19,6 +20,9 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
+
+        // Передаём Stage в SettingsPanel
+        SettingsPanel.setStage(stage);
 
         MainMenuView view = new MainMenuView();
         Scene scene = view.createScene(stage);
@@ -34,6 +38,11 @@ public class Main extends Application {
         stage.setMinWidth(960);
         stage.setMinHeight(540);
 
+        // Настройки окна
+        stage.setIconified(false);
+        stage.setAlwaysOnTop(false);
+        stage.requestFocus();
+
         final double[] lastW = {stage.getWidth()};
         final double[] lastH = {stage.getHeight()};
 
@@ -43,12 +52,24 @@ public class Main extends Application {
         stage.heightProperty().addListener((obs, oldVal, newVal) ->
                 requestResize(stage, lastW, lastH));
 
+        // Обработка восстановления окна
+        stage.showingProperty().addListener((obs, wasShowing, isShowing) -> {
+            if (isShowing) {
+                stage.toFront();
+                stage.requestFocus();
+            }
+        });
+
         stage.show();
 
-        // fullscreen запускается ПОСЛЕ show (важно)
-        Platform.runLater(ScreenManager::startFullscreen);
+        // Fullscreen запускается ПОСЛЕ show
+        Platform.runLater(() -> {
+            ScreenManager.startFullscreen();
+            stage.toFront();
+            stage.requestFocus();
+        });
 
-        // музыка один раз
+        // Музыка
         AudioManager.playMusic("/audio/fff.mp3");
     }
 

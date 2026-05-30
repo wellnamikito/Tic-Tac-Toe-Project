@@ -5,13 +5,19 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.Stage;
 import manager.AudioManager;
 import manager.ScreenManager;
+import java.io.IOException;
 
 public class SettingsPanel extends StackPane {
 
-    // Хранит текущее разрешение только в памяти (в рамках сессии)
-    private static String CURRENT_RESOLUTION = "1920x1080";
+    private static Stage primaryStage;
+
+    // Метод для передачи Stage из Main
+    public static void setStage(Stage stage) {
+        primaryStage = stage;
+    }
 
     public SettingsPanel() {
 
@@ -21,18 +27,16 @@ public class SettingsPanel extends StackPane {
         getStyleClass().add("settings-overlay");
         setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
-        // ================= WINDOW (ФИКСИРОВАННЫЙ РАЗМЕР) =================
+        // ================= WINDOW =================
         VBox window = new VBox();
         window.getStyleClass().add("settings-window");
 
         window.setPrefWidth(1400);
         window.setMaxWidth(1400);
         window.setMinWidth(1400);
-
         window.setPrefHeight(800);
-        window.setMaxHeight(800);
-        window.setMinHeight(800);
-
+        window.setMaxHeight(900);
+        window.setMinHeight(900);
         window.setPadding(new Insets(52));
         window.setSpacing(38);
         window.setAlignment(Pos.TOP_CENTER);
@@ -63,10 +67,8 @@ public class SettingsPanel extends StackPane {
 
         ColumnConstraints c1 = new ColumnConstraints();
         c1.setPercentWidth(45);
-
         ColumnConstraints c2 = new ColumnConstraints();
         c2.setPercentWidth(55);
-
         grid.getColumnConstraints().addAll(c1, c2);
 
         int row = 0;
@@ -78,33 +80,10 @@ public class SettingsPanel extends StackPane {
 
         ComboBox<String> resolution = new ComboBox<>();
         resolution.getItems().addAll("1920x1080", "1600x900", "1280x720");
-
-        // Устанавливаем последнее значение из памяти
-        resolution.setValue(CURRENT_RESOLUTION);
-
+        resolution.setValue("1920x1080");
         resolution.getStyleClass().add("settings-combo");
         resolution.setPrefWidth(484);
         resolution.setPrefHeight(62);
-
-        // Сохраняем в памяти при выборе
-        resolution.setOnAction(e -> {
-            String selected = resolution.getValue();
-            String[] parts = selected.split("x");
-            int width = Integer.parseInt(parts[0]);
-            int height = Integer.parseInt(parts[1]);
-
-            // Сохраняем в статическое поле (только в сессии)
-            CURRENT_RESOLUTION = selected;
-
-            // Меняем размер окна
-            ScreenManager.setWindowSize(width, height);
-
-            // Центрируем панель
-            Platform.runLater(() -> {
-                window.setLayoutX((getWidth() - window.getPrefWidth()) / 2);
-                window.setLayoutY((getHeight() - window.getPrefHeight()) / 2);
-            });
-        });
 
         grid.add(resolution, 1, row++);
         grid.add(createSeparator(), 0, row++, 2, 1);
@@ -209,6 +188,24 @@ public class SettingsPanel extends StackPane {
 
         grid.add(soundBox, 1, row++);
 
+        // =====================================================
+// АУДИОУСТРОЙСТВО
+// =====================================================
+        grid.add(createSectionLabel("Аудиоустройство"), 0, row);
+
+        Button audioDeviceBtn = new Button("🔊 Выбрать устройство вывода");
+        audioDeviceBtn.getStyleClass().add("settings-button");
+        audioDeviceBtn.setPrefWidth(484);
+        audioDeviceBtn.setPrefHeight(62);
+        audioDeviceBtn.setOnAction(e -> openSystemSoundSettings());
+
+// Создаём контейнер и сдвигаем кнопку влево
+        HBox audioBox = new HBox(audioDeviceBtn);
+        audioBox.setAlignment(Pos.CENTER_LEFT);  // Выравнивание влево
+        audioBox.setPadding(new Insets(0, 0, 0, 90));  // Сдвиг влево (уменьшите/увеличьте 50)
+
+        grid.add(audioBox, 1, row++);
+
         // ================= BUILD =================
         window.getChildren().addAll(topBox, title, grid);
         getChildren().add(window);
@@ -255,5 +252,48 @@ public class SettingsPanel extends StackPane {
                 onChange.accept(newVal.doubleValue())
         );
         return slider;
+    }
+
+    // =====================================================
+    // ОТКРЫТИЕ СИСТЕМНЫХ НАСТРОЕК ЗВУКА
+    // =====================================================
+    private void openSystemSoundSettings() {
+        String os = System.getProperty("os.name").toLowerCase();
+
+        try {
+            if (os.contains("win")) {
+                // Windows 10/11
+                Runtime.getRuntime().exec("control.exe mmsys.cpl");
+            } else if (os.contains("mac")) {
+                // macOS
+                Runtime.getRuntime().exec("open /System/Library/PreferencePanes/Sound.prefPane");
+            } else {
+                showManualAudioInstruction();
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            showManualAudioInstruction();
+        }
+    }
+
+    private void showManualAudioInstruction() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Настройка аудиоустройств");
+        alert.setHeaderText("Как выбрать устройство вывода:");
+        alert.setContentText("""
+            📌 Windows:
+            1. Нажмите правой кнопкой мыши на значок 🔊 динамика в панели задач
+            2. Выберите "Звук" или "Открыть настройки звука"
+            3. Перейдите на вкладку "Воспроизведение"
+            4. Выберите нужное устройство (наушники, колонки, Bluetooth)
+            5. Нажмите "По умолчанию" и "ОК"
+            
+            📌 macOS:
+            Системные настройки → Звук → Вкладка "Вывод"
+            
+            📌 Linux:
+            Настройки → Звук → Вкладка "Вывод"
+            """);
+        alert.showAndWait();
     }
 }
