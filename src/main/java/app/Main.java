@@ -66,7 +66,7 @@ public class Main extends Application {
             stage.requestFocus();
         });
 
-        AudioManager.playMusic("/audio/fff.mp3");
+        AudioManager.playMusic("/audio/fff.wav");
     }
 
     private void requestResize(Stage stage, double[] lastW, double[] lastH) {

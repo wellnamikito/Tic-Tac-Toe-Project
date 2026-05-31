@@ -1,0 +1,184 @@
+.shop-root{
+
+    -fx-alignment:center;
+
+    -fx-background-color:transparent;
+}
+
+.shop-window{
+
+    -fx-pref-width:1200;
+    -fx-pref-height:760;
+
+    -fx-background-color:
+        rgba(248,244,234,0.94);
+
+    -fx-background-radius:35;
+
+    -fx-border-radius:35;
+
+    -fx-border-color:#d8d0c6;
+
+    -fx-border-width:3;
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(0,0,0,0.25),
+            40,0.2,0,10
+        );
+}
+
+/* LEFT */
+
+.left-panel{
+
+    -fx-border-color:
+        transparent #c6beb3 transparent transparent;
+
+    -fx-border-width:0 2 0 0;
+
+    -fx-background-color:
+        rgba(255,255,255,0.15);
+}
+
+.shop-balance{
+
+    -fx-font-size:30;
+
+    -fx-fill:#304a7a;
+
+    -fx-font-weight:bold;
+}
+
+.plus-button{
+
+    -fx-background-radius:14;
+
+    -fx-font-size:24;
+
+    -fx-background-color:white;
+
+    -fx-cursor:hand;
+}
+
+.category-button{
+
+    -fx-background-color:
+        rgba(255,220,225,0.6);
+
+    -fx-background-radius:18;
+
+    -fx-pref-height:75;
+
+    -fx-font-size:20;
+
+    -fx-alignment:CENTER_LEFT;
+
+    -fx-padding:0 20;
+
+    -fx-cursor:hand;
+}
+
+.category-button:hover{
+
+    -fx-background-color:
+        rgba(255,200,210,0.9);
+}
+
+/* TITLE */
+
+.shop-title{
+
+    -fx-font-size:42;
+
+    -fx-fill:#25324a;
+}
+
+/* ITEM */
+
+.shop-item{
+
+    -fx-background-color:
+        linear-gradient(
+            to bottom,
+            rgba(255,255,255,0.88),
+            rgba(245,241,232,0.92)
+        );
+
+    -fx-background-radius:26;
+
+    -fx-border-radius:26;
+
+    -fx-border-color:#d3cabf;
+
+    -fx-border-width:2;
+
+    -fx-padding:20;
+
+    -fx-pref-width:210;
+
+    -fx-pref-height:260;
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(0,0,0,0.15),
+            15,0.1,0,4
+        );
+}
+
+.shop-item:hover{
+
+    -fx-translate-y:-3;
+
+    -fx-scale-x:1.02;
+
+    -fx-scale-y:1.02;
+}
+
+.preview{
+
+    -fx-background-color:
+        rgba(255,255,255,0.85);
+
+    -fx-background-radius:18;
+
+    -fx-border-radius:18;
+
+    -fx-border-color:#c9c1b5;
+
+    -fx-alignment: center;
+}
+
+.shop-price{
+
+    -fx-fill:#304a7a;
+
+    -fx-font-size:24;
+
+    -fx-font-weight:bold;
+}
+
+.buy-button{
+
+    -fx-background-radius:16;
+
+    -fx-font-size:16;
+
+    -fx-background-color:
+        linear-gradient(
+            to bottom,
+            #ffe6a8,
+            #f7c95a
+        );
+
+    -fx-cursor:hand;
+}
+
+.item-title{
+
+    -fx-font-size:18;
+
+    -fx-font-weight:bold;
+}

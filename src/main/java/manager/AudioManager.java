@@ -7,7 +7,7 @@ public class AudioManager {
 
     private static MediaPlayer musicPlayer;
 
-    private static double musicVolume = 0.5;
+    private static double musicVolume = 0.0;
     private static double soundVolume = 0.5;
 
     private static boolean musicMuted = false;
