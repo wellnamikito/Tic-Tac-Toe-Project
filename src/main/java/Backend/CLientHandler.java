@@ -161,8 +161,9 @@ public class CLientHandler implements Runnable {
                 // =========================
                 if (message.equals("READY")) {
 
-                    server.addWaitingPlayer(this);
-                    sendMessage("WAITING_FOR_OPPONENT");
+                    if (session == null) {
+                        server.addWaitingPlayer(this);
+                    }
 
                     continue;
                 }
