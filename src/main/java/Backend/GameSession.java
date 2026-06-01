@@ -3,31 +3,12 @@ package Backend;
 /**
  * GameSession — управление игровой сессией между двумя игроками.
  *
- * <p>📌 Это центральный класс игровой логики, который:
- * <ul>
- *   <li>управляет состоянием игры</li>
- *   <li>обрабатывает ходы игроков</li>
- *   <li>проверяет победу и ничью</li>
- *   <li>обрабатывает чат (общий и приватный)</li>
- *   <li>синхронизирует состояние между клиентами</li>
- *   <li>отправляет события фронтенду через TCP</li>
- * </ul>
- *
- * <p>📡 Протокол сообщений (для фронтенда):
- * <ul>
- *   <li>START — начало игры</li>
- *   <li>ROLE X / ROLE O — назначение роли</li>
- *   <li>SIZE n — размер поля</li>
- *   <li>STATE — текущее состояние поля</li>
- *   <li>TURN YOUR / TURN WAIT — управление ходом</li>
- *   <li>WIN / LOSE / DRAW — результат игры</li>
- *   <li>INVALID — некорректный ход</li>
- *   <li>NOT YOUR TURN — ход вне очереди</li>
- *   <li>RESTART — перезапуск игры</li>
- *   <li>OPPONENT_LEFT — соперник отключился</li>
- * </ul>
- *
- * <p>📌 Поддерживаемые размеры поля: 3x3 и 9x9</p>
+ * 📌 Отвечает за:
+ * - игровую логику
+ * - обработку ходов
+ * - проверку победы/ничьи
+ * - синхронизацию состояния между игроками
+ * - отправку событий клиентам
  */
 public class GameSession {
 
@@ -41,19 +22,11 @@ public class GameSession {
     private boolean gameOver = false;
 
     /**
-     * Создаёт игровую сессию между двумя игроками.
-     *
-     * <p>📌 Автоматически:
-     * <ul>
-     *   <li>инициализирует поле</li>
-     *   <li>назначает роли X и O</li>
-     *   <li>запускает игру</li>
-     * </ul>
+     * Создаёт игровую сессию.
      *
      * @param player1 первый игрок
      * @param player2 второй игрок
      * @param size размер поля (3 или 9)
-     * @throws IllegalArgumentException если размер поля не 3 или 9
      */
     public GameSession(CLientHandler player1,
                        CLientHandler player2,
@@ -62,18 +35,14 @@ public class GameSession {
         this.player1 = player1;
         this.player2 = player2;
 
-        // поддержка только 3x3 и 9x9
         if (size != 3 && size != 9) {
-            throw new IllegalArgumentException(
-                    "Only 3x3 and 9x9 boards are supported"
-            );
+            throw new IllegalArgumentException("Only 3x3 and 9x9 boards are supported");
         }
 
         this.size = size;
 
         board = new char[size][size];
 
-        // заполнение поля
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 board[i][j] = ' ';
@@ -82,21 +51,13 @@ public class GameSession {
 
         player1.setSession(this);
         player2.setSession(this);
-
-        startGame();
     }
 
     // =========================
-    // START GAME
+    // START GAME (вызывается сервером)
     // =========================
 
-    /**
-     * Запускает игровую сессию.
-     *
-     * 📡 Отправляет клиентам:
-     * START, ROLE, SIZE, TURN, STATE
-     */
-    private void startGame() {
+    public void startGame() {
 
         player1.sendMessage("START");
         player2.sendMessage("START");
@@ -115,20 +76,6 @@ public class GameSession {
     // HANDLE MESSAGES
     // =========================
 
-    /**
-     * Обрабатывает сообщения от клиентов.
-     *
-     * <p>📌 Поддерживаемые команды:
-     * <ul>
-     *   <li>MOVE x y — сделать ход</li>
-     *   <li>CHAT_ALL text — общий чат</li>
-     *   <li>CHAT_PRIVATE nick text — личное сообщение</li>
-     *   <li>RESTART — перезапуск игры</li>
-     * </ul>
-     *
-     * @param sender игрок-отправитель
-     * @param message сообщение клиента
-     */
     public void handleMessage(CLientHandler sender,
                               String message) {
 
@@ -145,10 +92,7 @@ public class GameSession {
             String text = message.substring(9);
 
             String formatted =
-                    "[Общий] [" +
-                            sender.getNickname() +
-                            "]: " +
-                            text;
+                    "[Общий] [" + sender.getNickname() + "]: " + text;
 
             player1.sendMessage(formatted);
             player2.sendMessage(formatted);
@@ -248,12 +192,8 @@ public class GameSession {
     // GAME LOGIC
     // =========================
 
-    /**
-     * Проверяет победу после хода.
-     *
-     * @return true — если игрок выиграл
-     */
     private boolean checkWin(int x, int y) {
+
         char symbol = board[x][y];
 
         boolean win = true;
@@ -288,9 +228,6 @@ public class GameSession {
         return false;
     }
 
-    /**
-     * Проверяет ничью (если поле заполнено).
-     */
     private boolean isDraw() {
 
         for (int i = 0; i < size; i++)
@@ -305,9 +242,6 @@ public class GameSession {
     // RESTART
     // =========================
 
-    /**
-     * Перезапускает игру и очищает поле.
-     */
     private void restartGame() {
 
         for (int i = 0; i < size; i++)
@@ -328,9 +262,6 @@ public class GameSession {
     // NETWORK
     // =========================
 
-    /**
-     * Отправляет текущее состояние поля обоим игрокам.
-     */
     private void sendState() {
 
         StringBuilder sb = new StringBuilder();
@@ -345,9 +276,6 @@ public class GameSession {
         player2.sendMessage(state);
     }
 
-    /**
-     * Отправляет информацию о текущем ходе.
-     */
     private void sendTurn() {
 
         if (isPlayer1Turn) {
@@ -359,11 +287,10 @@ public class GameSession {
         }
     }
 
-    /**
-     * Вызывается при отключении игрока.
-     *
-     * @param player отключившийся игрок
-     */
+    // =========================
+    // DISCONNECT
+    // =========================
+
     public void playerDisconnected(CLientHandler player) {
 
         gameOver = true;
@@ -375,9 +302,6 @@ public class GameSession {
         }
     }
 
-    /**
-     * Возвращает соперника игрока.
-     */
     private CLientHandler getOpponent(CLientHandler player) {
         return (player == player1) ? player2 : player1;
     }
