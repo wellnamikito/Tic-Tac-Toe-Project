@@ -16,17 +16,14 @@ public class OnlineGameView {
 
     private Button[][] cells;
     private char[][] board;
-    private int size;
 
+    private int size;
     private boolean myTurn = false;
     private boolean gameOver = false;
 
     private TCPClient client;
     private char mySymbol = 'X';
 
-    // =========================
-    // ✅ ВОТ ЭТОГО КОНСТРУКТОРА ТЕБЕ НЕ ХВАТАЛО
-    // =========================
     public OnlineGameView(TCPClient client, int size) {
         this.client = client;
         this.size = size;
@@ -34,8 +31,8 @@ public class OnlineGameView {
 
     public Scene createScene() {
 
-        this.gameOver = false;
-        this.myTurn = false;
+        gameOver = false;
+        myTurn = false;
 
         StackPane root = new StackPane();
         GridPane grid = new GridPane();
@@ -44,7 +41,9 @@ public class OnlineGameView {
         cells = new Button[size][size];
         board = new char[size][size];
 
-        // НЕ СОЗДАЁМ TCPClient ЗАНОВО!
+        // 🔥 ПРАВИЛЬНЫЙ HANDSHAKE
+        client.send("NICK player");
+        client.send("MODE " + size);
         client.send("READY");
 
         for (int r = 0; r < size; r++) {
@@ -73,22 +72,20 @@ public class OnlineGameView {
         }
 
         root.getChildren().add(grid);
-
-        return new Scene(root, 1920, 1080);
+        return new Scene(root, 800, 800);
     }
 
-    // =========================
-    // SERVER HANDLER
-    // =========================
     public void handleServer(String msg) {
 
         if (gameOver) return;
 
+        // ================= ROLE =================
         if (msg.startsWith("ROLE")) {
             mySymbol = msg.contains("X") ? 'X' : 'O';
             return;
         }
 
+        // ================= STATE =================
         if (msg.startsWith("STATE")) {
 
             String[] parts = msg.split(" ");
@@ -118,6 +115,7 @@ public class OnlineGameView {
             return;
         }
 
+        // ================= TURN =================
         if (msg.equals("TURN YOUR")) {
             myTurn = true;
             return;
@@ -128,10 +126,11 @@ public class OnlineGameView {
             return;
         }
 
+        // ================= END =================
         if (msg.equals("WIN")) end("Победа");
-        else if (msg.equals("LOSE")) end("Поражение");
-        else if (msg.equals("DRAW")) end("Ничья");
-        else if (msg.equals("OPPONENT_LEFT")) end("Соперник вышел");
+        if (msg.equals("LOSE")) end("Поражение");
+        if (msg.equals("DRAW")) end("Ничья");
+        if (msg.equals("OPPONENT_LEFT")) end("Соперник вышел");
     }
 
     private void end(String text) {
@@ -140,10 +139,7 @@ public class OnlineGameView {
         myTurn = false;
 
         Platform.runLater(() -> {
-
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Игра окончена");
-            alert.setHeaderText(null);
             alert.setContentText(text);
             alert.show();
 
@@ -151,8 +147,6 @@ public class OnlineGameView {
             stage.setScene(new GameView().createScene());
         });
 
-        if (client != null) {
-            client.close();
-        }
+        client.close();
     }
 }
