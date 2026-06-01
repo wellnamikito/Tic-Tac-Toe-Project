@@ -1,0 +1,48 @@
+.game-root {
+
+    -fx-background-image: url("/images/game_background.jpg");
+
+    -fx-background-size: cover;
+
+    -fx-background-position: center center;
+}
+
+.game-menu {
+
+    -fx-background-color: rgba(20,20,20,0.85);
+
+    -fx-padding: 40;
+
+    -fx-background-radius: 25;
+
+    -fx-min-width: 450;
+}
+
+.game-title {
+
+    -fx-fill: white;
+
+    -fx-font-size: 34px;
+
+    -fx-font-weight: bold;
+}
+
+.game-button {
+
+    -fx-pref-width: 280;
+
+    -fx-pref-height: 55;
+
+    -fx-font-size: 18px;
+
+    -fx-background-radius: 12;
+
+    -fx-cursor: hand;
+}
+
+.game-button:hover {
+
+    -fx-scale-x: 1.05;
+
+    -fx-scale-y: 1.05;
+}

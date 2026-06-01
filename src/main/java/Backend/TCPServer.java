@@ -1,21 +1,20 @@
 package Backend;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * TCPServer — основной серверный класс приложения.
+ * TCPServer
  *
- * 📌 Отвечает за:
- * - приём TCP-подключений
- * - управление клиентами
- * - очередь ожидания игроков
- * - создание игровых сессий
+ * Клиенты:
+ * NICK
+ * MODE 3 / MODE 9
+ * READY
  *
- * 📌 Логика:
- * Клиенты подключаются → выбирают MODE → отправляют READY →
- * попадают в очередь → сервер создаёт GameSession.
+ * После READY игрок попадает в очередь своего режима.
  */
 public class TCPServer {
 
@@ -23,95 +22,193 @@ public class TCPServer {
 
     private ServerSocket serverSocket;
 
-    private List<CLientHandler> clients = new ArrayList<>();
+    private final List<CLientHandler> clients =
+            new ArrayList<>();
 
     /**
-     * Очередь игроков, готовых к игре
+     * Очередь 3x3
      */
-    private final List<CLientHandler> waitingPlayers = new ArrayList<>();
+    private final List<CLientHandler> waiting3x3 =
+            new ArrayList<>();
+
+    /**
+     * Очередь 9x9
+     */
+    private final List<CLientHandler> waiting9x9 =
+            new ArrayList<>();
 
     public void start() {
 
         config = new ConfigManager();
+
         int port = config.getPort();
 
         try {
-            serverSocket = new ServerSocket(port);
+
+            serverSocket =
+                    new ServerSocket(port);
 
             System.out.println("=== TCP SERVER STARTED ===");
             System.out.println("Port: " + port);
-            System.out.println("Max Clients: " + config.getMaxClients());
+            System.out.println("Max Clients: " +
+                    config.getMaxClients());
             System.out.println("==========================");
 
             while (true) {
 
-                Socket clientSocket = serverSocket.accept();
+                Socket clientSocket =
+                        serverSocket.accept();
 
-                System.out.println("New client: " + clientSocket.getInetAddress());
+                System.out.println(
+                        "New client: "
+                                + clientSocket.getInetAddress()
+                );
 
-                if (clients.size() >= config.getMaxClients()) {
-                    System.out.println("Server full, connection rejected");
+                if (clients.size()
+                        >= config.getMaxClients()) {
+
+                    System.out.println(
+                            "Server full, connection rejected"
+                    );
+
                     clientSocket.close();
                     continue;
                 }
 
-                CLientHandler client = new CLientHandler(clientSocket, this);
+                CLientHandler client =
+                        new CLientHandler(
+                                clientSocket,
+                                this
+                        );
 
                 clients.add(client);
+
                 new Thread(client).start();
 
-                System.out.println("Client connected. Total: " + clients.size());
+                System.out.println(
+                        "Client connected. Total: "
+                                + clients.size()
+                );
             }
 
         } catch (IOException e) {
-            System.err.println("Server error: " + e.getMessage());
+
+            System.err.println(
+                    "Server error: "
+                            + e.getMessage()
+            );
+
             e.printStackTrace();
         }
     }
 
     /**
-     * Добавление игрока в очередь после READY
+     * Игрок нажал READY
      */
-    public synchronized void addWaitingPlayer(CLientHandler client) {
+    public synchronized void addWaitingPlayer(
+            CLientHandler client
+    ) {
 
-        waitingPlayers.add(client);
+        int boardSize =
+                client.getSelectedBoardSize();
 
-        System.out.println("Player added to queue: " + client.getNickname());
+        if (boardSize == 3) {
 
-        if (waitingPlayers.size() >= 2) {
+            waiting3x3.add(client);
 
-            CLientHandler p1 = waitingPlayers.remove(0);
-            CLientHandler p2 = waitingPlayers.remove(0);
+            client.sendMessage(
+                    "WAITING_FOR_OPPONENT"
+            );
 
-            int boardSize = p1.getSelectedBoardSize();
+            System.out.println(
+                    client.getNickname()
+                            + " entered 3x3 queue"
+            );
 
-            GameSession session = new GameSession(p1, p2, boardSize);
+            if (waiting3x3.size() >= 2) {
 
-            System.out.println("Game session started (" + boardSize + "x" + boardSize + ")");
+                CLientHandler p1 =
+                        waiting3x3.remove(0);
+
+                CLientHandler p2 =
+                        waiting3x3.remove(0);
+
+                new GameSession(
+                        p1,
+                        p2,
+                        3
+                );
+
+                System.out.println(
+                        "3x3 session started"
+                );
+            }
+
+        } else {
+
+            waiting9x9.add(client);
+
+            client.sendMessage(
+                    "WAITING_FOR_OPPONENT"
+            );
+
+            System.out.println(
+                    client.getNickname()
+                            + " entered 9x9 queue"
+            );
+
+            if (waiting9x9.size() >= 2) {
+
+                CLientHandler p1 =
+                        waiting9x9.remove(0);
+
+                CLientHandler p2 =
+                        waiting9x9.remove(0);
+
+                new GameSession(
+                        p1,
+                        p2,
+                        9
+                );
+
+                System.out.println(
+                        "9x9 session started"
+                );
+            }
         }
     }
 
     /**
      * Удаление клиента
      */
-    public void removeClient(CLientHandler client) {
+    public synchronized void removeClient(
+            CLientHandler client
+    ) {
 
         clients.remove(client);
-        waitingPlayers.remove(client);
 
-        System.out.println("Client disconnected. Remaining: " + clients.size());
+        waiting3x3.remove(client);
+        waiting9x9.remove(client);
+
+        System.out.println(
+                "Client disconnected. Remaining: "
+                        + clients.size()
+        );
     }
 
     /**
-     * Broadcast всем (если понадобится)
+     * Broadcast
      */
     public void broadcast(String message) {
-        for (CLientHandler c : clients) {
-            c.sendMessage(message);
+
+        for (CLientHandler client : clients) {
+
+            client.sendMessage(message);
         }
     }
 
     public static void main(String[] args) {
+
         new TCPServer().start();
     }
 }

@@ -141,8 +141,16 @@ public class GameSession {
             return;
         }
 
-        int x = Integer.parseInt(parts[1]);
-        int y = Integer.parseInt(parts[2]);
+        int x;
+        int y;
+
+        try {
+            x = Integer.parseInt(parts[1]);
+            y = Integer.parseInt(parts[2]);
+        } catch (Exception e) {
+            sender.sendMessage("INVALID");
+            return;
+        }
 
         if (x < 0 || x >= size || y < 0 || y >= size) {
             sender.sendMessage("INVALID");
