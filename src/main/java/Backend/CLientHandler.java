@@ -45,6 +45,8 @@ public class CLientHandler implements Runnable {
      */
     private Socket socket;
 
+    private int selectedBoardSize = 3;
+
     /**
      * Ссылка на основной сервер.
      */
@@ -89,6 +91,13 @@ public class CLientHandler implements Runnable {
     }
 
     /**
+     * @return выбранный пользователем размер поля
+     */
+    public int getSelectedBoardSize() {
+        return selectedBoardSize;
+    }
+
+    /**
      * Основной цикл обработки сообщений клиента.
      *
      * <p>📌 Логика:
@@ -111,21 +120,55 @@ public class CLientHandler implements Runnable {
                 System.out.println("Received: " + message);
 
                 // =========================
-                // SET NICKNAME
+                // NICKNAME
                 // =========================
                 if (message.startsWith("NICK")) {
 
                     String nick = message.substring(5);
-                    setNickname(nick);
 
+                    setNickname(nick);
                     sendMessage("NICK_OK");
 
                     System.out.println("Nickname set: " + nickname);
+
                     continue;
                 }
 
                 // =========================
-                // GAME SESSION MESSAGES
+                // MODE SELECTION (3 or 9)
+                // =========================
+                if (message.startsWith("MODE")) {
+
+                    try {
+                        int size = Integer.parseInt(message.substring(5));
+
+                        if (size == 3 || size == 9) {
+                            selectedBoardSize = size;
+                            sendMessage("MODE_OK");
+                        } else {
+                            sendMessage("INVALID_MODE");
+                        }
+
+                    } catch (Exception e) {
+                        sendMessage("INVALID_MODE");
+                    }
+
+                    continue;
+                }
+
+                // =========================
+                // READY (enter queue)
+                // =========================
+                if (message.equals("READY")) {
+
+                    server.addWaitingPlayer(this);
+                    sendMessage("WAITING_FOR_OPPONENT");
+
+                    continue;
+                }
+
+                // =========================
+                // GAME MESSAGES
                 // =========================
                 if (session != null) {
                     session.handleMessage(this, message);
