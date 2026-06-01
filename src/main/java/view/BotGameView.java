@@ -98,33 +98,74 @@ public class BotGameView {
     // =========================
     private void botMove() {
 
-        int bestR = -1;
-        int bestC = -1;
+        // 1. попытка выиграть
+        int[] winMove = findWinningMove('O');
+        if (winMove != null) {
+            makeMove(winMove[0], winMove[1], 'O');
+            return;
+        }
+
+        // 2. блокировка игрока
+        int[] blockMove = findWinningMove('X');
+        if (blockMove != null) {
+            makeMove(blockMove[0], blockMove[1], 'O');
+            return;
+        }
+
+        // 3. центр
+        int center = size / 2;
+        if (board[center][center] == ' ') {
+            makeMove(center, center, 'O');
+            return;
+        }
+
+        // 4. углы
+        int[][] corners = {
+                {0, 0},
+                {0, size - 1},
+                {size - 1, 0},
+                {size - 1, size - 1}
+        };
+
+        for (int[] c : corners) {
+            if (board[c[0]][c[1]] == ' ') {
+                makeMove(c[0], c[1], 'O');
+                return;
+            }
+        }
+
+        // 5. любой ход
+        for (int r = 0; r < size; r++) {
+            for (int c = 0; c < size; c++) {
+                if (board[r][c] == ' ') {
+                    makeMove(r, c, 'O');
+                    return;
+                }
+            }
+        }
+    }
+    private int[] findWinningMove(char symbol) {
 
         for (int r = 0; r < size; r++) {
             for (int c = 0; c < size; c++) {
 
                 if (board[r][c] == ' ') {
-                    bestR = r;
-                    bestC = c;
+
+                    board[r][c] = symbol;
+
+                    boolean win = checkWin(symbol);
+
+                    board[r][c] = ' ';
+
+                    if (win) {
+                        return new int[]{r, c};
+                    }
                 }
             }
         }
 
-        if (bestR == -1) return;
-
-        board[bestR][bestC] = 'O';
-        cells[bestR][bestC].setText("O");
-
-        if (checkWin('O')) {
-            endGame("Поражение", "Бот выиграл 🤖");
-        }
-
-        if (isDraw()) {
-            endGame("Ничья", "Ничья 🤝");
-        }
+        return null;
     }
-
     // =========================
     // WIN CHECK
     // =========================
@@ -169,7 +210,24 @@ public class BotGameView {
 
         return true;
     }
+    private void makeMove(int r, int c, char symbol) {
 
+        board[r][c] = symbol;
+        cells[r][c].setText(String.valueOf(symbol));
+
+        if (checkWin(symbol)) {
+
+            if (symbol == 'O') {
+                endGame("Поражение", "Бот выиграл 🤖");
+            } else {
+                endGame("Победа", "Ты выиграл 🎉");
+            }
+        }
+
+        if (isDraw()) {
+            endGame("Ничья", "Ничья 🤝");
+        }
+    }
     // =========================
     // END GAME (UI SAFE)
     // =========================
