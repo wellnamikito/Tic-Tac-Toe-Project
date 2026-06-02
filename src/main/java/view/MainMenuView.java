@@ -1,20 +1,6 @@
 package view;
 
-import controller.MainMenuController;
-import config.UIConfig;
-import javafx.scene.Scene;
-import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
-import manager.AudioManager;
-import view.panels.RulesPanel;
-import view.panels.SettingsPanel;
-import view.panels.ShopPanel;
+import controller.MainMenuController;import config.UIConfig;import javafx.scene.Scene;import javafx.scene.Group;import javafx.scene.Node;import javafx.scene.control.Button;import javafx.scene.image.Image;import javafx.scene.image.ImageView;import javafx.scene.layout.AnchorPane;import javafx.scene.layout.StackPane;import javafx.stage.Stage;import manager.AudioManager;import view.panels.RulesPanel;import view.panels.SettingsPanel;import view.panels.ShopPanel;
 
 public class MainMenuView {
 
@@ -166,12 +152,12 @@ public class MainMenuView {
         b.setFocusTraversable(false);
 
         b.setStyle("""
-            -fx-background-color: transparent;
-            -fx-background-insets: 0;
-            -fx-padding: 0;
-            -fx-focus-color: transparent;
-            -fx-faint-focus-color: transparent;
-        """);
+        -fx-background-color: transparent;
+        -fx-background-insets: 0;
+        -fx-padding: 0;
+        -fx-focus-color: transparent;
+        -fx-faint-focus-color: transparent;
+    """);
 
         return b;
     }
@@ -207,4 +193,5 @@ public class MainMenuView {
         scaleContainer.setScaleX(scale);
         scaleContainer.setScaleY(scale);
     }
+
 }
