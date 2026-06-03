@@ -69,4 +69,28 @@ public class ScreenManager {
             }
         });
     }
+    // =========================================================
+    // ДОБАВЬТЕ ЭТОТ МЕТОД
+    // =========================================================
+    public static void setFullscreen(boolean fullscreen) {
+        if (stage == null) return;
+
+        if (fullscreen && !stage.isFullScreen()) {
+            stage.setFullScreen(true);
+        } else if (!fullscreen && stage.isFullScreen()) {
+            stage.setFullScreen(false);
+            stage.setWidth(UIConfig.BASE_WIDTH);
+            stage.setHeight(UIConfig.BASE_HEIGHT);
+            stage.centerOnScreen();
+        }
+    }
+
+    // =========================================================
+    // ДОБАВЬТЕ ЭТОТ МЕТОД (для проверки состояния)
+    // =========================================================
+    public static boolean isFullscreen() {
+        return stage != null && stage.isFullScreen();
+    }
+
+
 }

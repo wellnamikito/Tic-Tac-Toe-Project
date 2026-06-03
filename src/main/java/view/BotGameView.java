@@ -1,5 +1,7 @@
 package view;
 
+
+import Backend.Difficulty;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -13,13 +15,21 @@ import javafx.application.Platform;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
 
+import java.util.Random;
+
 public class BotGameView {
 
     private Button[][] cells;
     private char[][] board;
     private int size;
+    private final Difficulty difficulty;
+    private final Random random = new Random();
 
     private boolean gameOver = false;
+
+    public BotGameView(Difficulty difficulty) {
+        this.difficulty = difficulty;
+    }
 
     public Scene createScene(int size) {
 
