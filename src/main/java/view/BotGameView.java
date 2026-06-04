@@ -15,7 +15,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import manager.ScreenManager;
+import manager.AudioManager;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class BotGameView {
@@ -44,6 +46,8 @@ public class BotGameView {
 
     public BotGameView(Difficulty difficulty) {
         this.difficulty = difficulty;
+        // Проверяем наличие звуковых файлов при создании
+        AudioManager.checkSoundFiles();
     }
 
     public Scene createScene(int size) {
@@ -356,7 +360,6 @@ public class BotGameView {
             Platform.runLater(() -> {
                 Stage stage = ScreenManager.getStage();
                 if (stage != null) {
-                    // НЕ выключаем полноэкранный режим!
                     stage.setScene(new GameView().createScene());
                 }
             });
@@ -375,9 +378,25 @@ public class BotGameView {
     }
 
     // =========================================================
-    // ОКНО РЕЗУЛЬТАТА
+    // ОКНО РЕЗУЛЬТАТА СО ЗВУКАМИ
     // =========================================================
     private void showResultDialog(String title, String message, String emoji) {
+        System.out.println("[GAME] Showing result dialog: " + title);
+
+        // Воспроизводим соответствующий звук в зависимости от результата
+        Platform.runLater(() -> {
+            if (title.equals("ПОБЕДА!")) {
+                System.out.println("[GAME] Playing win sound");
+                AudioManager.playWinSound();
+            } else if (title.equals("ПОРАЖЕНИЕ!")) {
+                System.out.println("[GAME] Playing lose sound");
+                AudioManager.playLoseSound();
+            } else if (title.equals("НИЧЬЯ!")) {
+                System.out.println("[GAME] Playing draw sound");
+                AudioManager.playDrawSound();
+            }
+        });
+
         VBox dialogBox = new VBox(12);
         dialogBox.setAlignment(Pos.CENTER);
         dialogBox.setStyle(
@@ -552,6 +571,7 @@ public class BotGameView {
     }
 
     private void restartRound() {
+        System.out.println("[GAME] Restarting round");
         for (int r = 0; r < size; r++) {
             for (int c = 0; c < size; c++) {
                 board[r][c] = ' ';
@@ -566,11 +586,20 @@ public class BotGameView {
     }
 
     private void updateScores() {
-        playerScoreLabel.setText(String.valueOf(playerScore));
-        botScoreLabel.setText(String.valueOf(botScore));
+        Platform.runLater(() -> {
+            playerScoreLabel.setText(String.valueOf(playerScore));
+            botScoreLabel.setText(String.valueOf(botScore));
+        });
     }
 
     private void playerMove(int r, int c) {
+        System.out.println("[GAME] Player move at (" + r + ", " + c + ")");
+
+        // Воспроизводим звук хода
+        Platform.runLater(() -> {
+            System.out.println("[GAME] Playing move sound");
+            AudioManager.playMoveSound();
+        });
 
         board[r][c] = 'X';
         cells[r][c].setText("X");
@@ -594,17 +623,27 @@ public class BotGameView {
         }
 
         updateTurnLabel(false);
-        botMove();
+
+        // Задержка перед ходом бота
+        new Thread(() -> {
+            try {
+                Thread.sleep(500);
+                Platform.runLater(this::botMove);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     // =========================================================
     // BOT MOVE С ПОДДЕРЖКОЙ СЛОЖНОСТИ
     // =========================================================
     private void botMove() {
+        System.out.println("[GAME] Bot move");
 
         // Проверка на сложность Easy - случайные ходы
         if (difficulty == Difficulty.EASY) {
-            java.util.ArrayList<int[]> emptyCells = new java.util.ArrayList<>();
+            ArrayList<int[]> emptyCells = new ArrayList<>();
             for (int r = 0; r < size; r++) {
                 for (int c = 0; c < size; c++) {
                     if (board[r][c] == ' ') {
@@ -647,9 +686,9 @@ public class BotGameView {
                     {size - 1, size - 1}
             };
 
-            for (int[] c : corners) {
-                if (board[c[0]][c[1]] == ' ') {
-                    makeMove(c[0], c[1], 'O');
+            for (int[] corner : corners) {
+                if (board[corner[0]][corner[1]] == ' ') {
+                    makeMove(corner[0], corner[1], 'O');
                     return;
                 }
             }
@@ -718,6 +757,8 @@ public class BotGameView {
     }
 
     private void makeMove(int r, int c, char symbol) {
+        System.out.println("[GAME] Make move at (" + r + ", " + c + ") with symbol " + symbol);
+
         board[r][c] = symbol;
         cells[r][c].setText(String.valueOf(symbol));
 

@@ -3,16 +3,11 @@ package view;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.StackPane;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import manager.ScreenManager;
+import manager.AudioManager;
 import network.TCPClient;
 
 public class OnlineGameView {
@@ -34,15 +29,33 @@ public class OnlineGameView {
     private Label opponentScoreLabel;
     private Label turnLabel;
 
+    // Компоненты для чата
+    private TextArea chatArea;
+    private TextField chatInput;
+    private ToggleButton chatAllButton;
+    private ToggleButton chatPrivateButton;
+    private boolean isChatAll = true;
+    private String opponentNickname = "СОПЕРНИК";
+
+    // Компоненты для сворачивания чата
+    private VBox chatPanel;
+    private Button toggleChatButton;
+    private boolean isChatExpanded = true;
+    private HBox centerArea;
+
     // Компоненты для перезапуска
     private BorderPane root;
     private GridPane grid;
     private StackPane overlayPane;
     private ScrollPane scrollPane;
+    private Region spacerLeft;
+    private Region spacerRight;
 
     public OnlineGameView(TCPClient client, int size) {
         this.client = client;
         this.size = size;
+        // Проверяем наличие звуковых файлов
+        AudioManager.checkSoundFiles();
     }
 
     public Scene createScene() {
@@ -193,15 +206,22 @@ public class OnlineGameView {
         StackPane.setMargin(back, new javafx.geometry.Insets(40, 0, 0, 85));
 
         // =========================================================
-        // ИГРОВОЕ ПОЛЕ (с прокруткой)
+        // ИГРОВОЕ ПОЛЕ И ЧАТ (с фиксированным центром)
         // =========================================================
+        centerArea = new HBox(20);
+        centerArea.setAlignment(Pos.CENTER);
+        centerArea.setPadding(new javafx.geometry.Insets(20));
+
+        // Игровое поле - фиксированный контейнер
+        StackPane gameContainer = new StackPane();
+        gameContainer.setAlignment(Pos.CENTER);
+
         grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
         grid.getStyleClass().add("grid-pane");
 
         initGameBoard();
 
-        // Создаём ScrollPane для прокрутки игрового поля
         scrollPane = new ScrollPane();
         scrollPane.setContent(grid);
         scrollPane.setFitToWidth(true);
@@ -211,23 +231,79 @@ public class OnlineGameView {
                 "-fx-background: transparent;" +
                         "-fx-background-color: transparent;" +
                         "-fx-border-color: transparent;" +
-                        "-fx-padding: 0;" +
-                        "-fx-background-insets: 0;" +
-                        "-fx-border-insets: 0;"
-        );
-
-        // Стилизация полосы прокрутки
-        scrollPane.getStylesheets().add(
-                getClass().getResource("/css/game.css").toExternalForm()
+                        "-fx-padding: 0;"
         );
         scrollPane.getStyleClass().add("custom-scroll-pane");
+
+        gameContainer.getChildren().add(scrollPane);
+
+        // Создаём панель чата
+        createChatPanel();
+
+        // Создаём спейсеры для центрирования игрового поля
+        spacerLeft = new Region();
+        spacerRight = new Region();
+        HBox.setHgrow(spacerLeft, Priority.ALWAYS);
+        HBox.setHgrow(spacerRight, Priority.ALWAYS);
+
+        // Добавляем элементы в центр с выравниванием
+        centerArea.getChildren().addAll(spacerLeft, gameContainer, spacerRight);
+
+        // Кнопка чата в правом верхнем углу
+        VBox chatButtonContainer = new VBox();
+        chatButtonContainer.setAlignment(Pos.TOP_RIGHT);
+        chatButtonContainer.setPadding(new javafx.geometry.Insets(0, 20, 0, 0));
+
+        toggleChatButton = new Button("📨");
+        toggleChatButton.setStyle(
+                "-fx-background-color: #8B5A2B;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 20px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 15;" +
+                        "-fx-padding: 8 12;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-min-width: 45;" +
+                        "-fx-min-height: 45;"
+        );
+        toggleChatButton.setOnMouseEntered(e -> toggleChatButton.setStyle(
+                "-fx-background-color: #A0522D;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 20px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 15;" +
+                        "-fx-padding: 8 12;" +
+                        "-fx-cursor: hand;"
+        ));
+        toggleChatButton.setOnMouseExited(e -> toggleChatButton.setStyle(
+                "-fx-background-color: #8B5A2B;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 20px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 15;" +
+                        "-fx-padding: 8 12;" +
+                        "-fx-cursor: hand;"
+        ));
+        toggleChatButton.setOnAction(e -> toggleChat());
+
+        chatButtonContainer.getChildren().add(toggleChatButton);
+
+        // Создаём контейнер для чата и кнопки
+        VBox chatContainer = new VBox(10);
+        chatContainer.setAlignment(Pos.TOP_RIGHT);
+        chatContainer.getChildren().addAll(chatButtonContainer, chatPanel);
+
+        // Слой для чата поверх всего
+        StackPane mainContainer = new StackPane();
+        mainContainer.getChildren().addAll(centerArea, chatContainer);
+        StackPane.setAlignment(chatContainer, Pos.TOP_RIGHT);
 
         overlayPane = new StackPane();
         overlayPane.setAlignment(Pos.CENTER);
         overlayPane.setVisible(false);
 
         StackPane gameArea = new StackPane();
-        gameArea.getChildren().addAll(scrollPane, overlayPane);
+        gameArea.getChildren().addAll(mainContainer, overlayPane);
         gameArea.setAlignment(Pos.CENTER);
 
         // Собираем всё вместе
@@ -241,7 +317,7 @@ public class OnlineGameView {
         Scene scene = new Scene(root, 800, 800);
         scene.getStylesheets().add(getClass().getResource("/css/game.css").toExternalForm());
 
-        // 🔥 ПРАВИЛЬНЫЙ HANDSHAKE
+        // ПРАВИЛЬНЫЙ HANDSHAKE
         client.send("NICK player");
         client.send("MODE " + size);
         client.send("READY");
@@ -250,6 +326,208 @@ public class OnlineGameView {
         ScreenManager.restoreFullscreen();
 
         return scene;
+    }
+
+    // =========================================================
+    // СОЗДАНИЕ ПАНЕЛИ ЧАТА
+    // =========================================================
+    private void createChatPanel() {
+        chatPanel = new VBox(10);
+        chatPanel.setAlignment(Pos.CENTER);
+        chatPanel.setStyle(
+                "-fx-background-color: rgba(255, 218, 185, 0.95);" +
+                        "-fx-background-radius: 15;" +
+                        "-fx-border-color: #8B5A2B;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-radius: 15;" +
+                        "-fx-padding: 10;" +
+                        "-fx-min-width: 280;" +
+                        "-fx-max-width: 280;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0.1, 0, 5);"
+        );
+
+        Label chatTitle = new Label("💬 ЧАТ");
+        chatTitle.setStyle(
+                "-fx-text-fill: #5C3317;" +
+                        "-fx-font-size: 18px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-family: 'Segoe UI';"
+        );
+
+        chatArea = new TextArea();
+        chatArea.setEditable(false);
+        chatArea.setWrapText(true);
+        chatArea.setStyle(
+                "-fx-background-color: #FFF8E7;" +
+                        "-fx-border-color: #8B5A2B;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-font-size: 12px;" +
+                        "-fx-font-family: 'Segoe UI';"
+        );
+        chatArea.setPrefHeight(300);
+        chatArea.setText("💬 Добро пожаловать в чат!\n");
+
+        HBox chatModeBox = new HBox(10);
+        chatModeBox.setAlignment(Pos.CENTER);
+
+        chatAllButton = new ToggleButton("🌐 Общий");
+        chatPrivateButton = new ToggleButton("🔒 Личный");
+
+        chatAllButton.setSelected(true);
+
+        String buttonStyle =
+                "-fx-background-color: #8B5A2B;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 12px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-padding: 5 10;" +
+                        "-fx-cursor: hand;";
+
+        chatAllButton.setStyle(buttonStyle);
+        chatPrivateButton.setStyle(buttonStyle);
+
+        chatAllButton.setOnAction(e -> {
+            chatAllButton.setSelected(true);
+            chatPrivateButton.setSelected(false);
+            isChatAll = true;
+            chatInput.setPromptText("Введите сообщение для всех...");
+        });
+
+        chatPrivateButton.setOnAction(e -> {
+            chatPrivateButton.setSelected(true);
+            chatAllButton.setSelected(false);
+            isChatAll = false;
+            chatInput.setPromptText("Введите сообщение для соперника...");
+        });
+
+        chatModeBox.getChildren().addAll(chatAllButton, chatPrivateButton);
+
+        chatInput = new TextField();
+        chatInput.setPromptText("Введите сообщение...");
+        chatInput.setStyle(
+                "-fx-background-color: #FFF8E7;" +
+                        "-fx-border-color: #8B5A2B;" +
+                        "-fx-border-radius: 10;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-padding: 8;" +
+                        "-fx-font-size: 12px;"
+        );
+
+        chatInput.setOnAction(e -> sendChatMessage());
+
+        Button sendButton = new Button("📤 Отправить");
+        sendButton.setStyle(
+                "-fx-background-color: #8B5A2B;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 12px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-padding: 8 15;" +
+                        "-fx-cursor: hand;"
+        );
+        sendButton.setOnMouseEntered(e -> sendButton.setStyle(
+                "-fx-background-color: #A0522D;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 12px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-padding: 8 15;" +
+                        "-fx-cursor: hand;"
+        ));
+        sendButton.setOnMouseExited(e -> sendButton.setStyle(
+                "-fx-background-color: #8B5A2B;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 12px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-padding: 8 15;" +
+                        "-fx-cursor: hand;"
+        ));
+        sendButton.setOnAction(e -> sendChatMessage());
+
+        HBox inputBox = new HBox(10);
+        inputBox.getChildren().addAll(chatInput, sendButton);
+
+        chatPanel.getChildren().addAll(chatTitle, chatArea, chatModeBox, inputBox);
+    }
+
+    // =========================================================
+    // СВОРАЧИВАНИЕ/РАЗВОРАЧИВАНИЕ ЧАТА
+    // =========================================================
+    private void toggleChat() {
+        if (isChatExpanded) {
+            // Сворачиваем чат
+            chatPanel.setVisible(false);
+            chatPanel.setManaged(false);
+            toggleChatButton.setText("📩");
+            toggleChatButton.setStyle(
+                    "-fx-background-color: #8B5A2B;" +
+                            "-fx-text-fill: white;" +
+                            "-fx-font-size: 20px;" +
+                            "-fx-font-weight: bold;" +
+                            "-fx-background-radius: 15;" +
+                            "-fx-padding: 8 12;" +
+                            "-fx-cursor: hand;" +
+                            "-fx-min-width: 45;" +
+                            "-fx-min-height: 45;"
+            );
+            isChatExpanded = false;
+        } else {
+            // Разворачиваем чат
+            chatPanel.setVisible(true);
+            chatPanel.setManaged(true);
+            toggleChatButton.setText("📨");
+            toggleChatButton.setStyle(
+                    "-fx-background-color: #8B5A2B;" +
+                            "-fx-text-fill: white;" +
+                            "-fx-font-size: 20px;" +
+                            "-fx-font-weight: bold;" +
+                            "-fx-background-radius: 15;" +
+                            "-fx-padding: 8 12;" +
+                            "-fx-cursor: hand;" +
+                            "-fx-min-width: 45;" +
+                            "-fx-min-height: 45;"
+            );
+            isChatExpanded = true;
+        }
+    }
+
+    // =========================================================
+    // ОТПРАВКА СООБЩЕНИЯ В ЧАТ СО ЗВУКОМ
+    // =========================================================
+    private void sendChatMessage() {
+        String message = chatInput.getText().trim();
+        if (message.isEmpty()) return;
+
+        // Воспроизводим звук отправки сообщения
+        AudioManager.playMessageSound();
+
+        if (isChatAll) {
+            client.send("CHAT_ALL " + message);
+            addChatMessage("[ВЫ (общий)]: " + message);
+        } else {
+            client.send("CHAT_PRIVATE " + opponentNickname + " " + message);
+            addChatMessage("[ВЫ -> " + opponentNickname + "]: " + message);
+        }
+
+        chatInput.clear();
+    }
+
+    // =========================================================
+    // ДОБАВЛЕНИЕ СООБЩЕНИЯ В ЧАТ СО ЗВУКОМ
+    // =========================================================
+    private void addChatMessage(String message) {
+        Platform.runLater(() -> {
+            chatArea.appendText(message + "\n");
+            chatArea.setScrollTop(Double.MAX_VALUE);
+
+            // Воспроизводим звук получения сообщения (если сообщение не от нас)
+            if (!message.startsWith("[ВЫ")) {
+                AudioManager.playMessageSound();
+            }
+        });
     }
 
     // =========================================================
@@ -277,6 +555,9 @@ public class OnlineGameView {
                     if (gameOver) return;
                     if (!myTurn) return;
                     if (board[rr][cc] != ' ') return;
+
+                    // Воспроизводим звук хода при клике
+                    AudioManager.playMoveSound();
 
                     client.send("MOVE " + rr + " " + cc);
                 });
@@ -403,7 +684,6 @@ public class OnlineGameView {
             Platform.runLater(() -> {
                 Stage stage = ScreenManager.getStage();
                 if (stage != null) {
-                    // НЕ выключаем полноэкранный режим!
                     stage.setScene(new GameView().createScene());
                 }
             });
@@ -423,11 +703,30 @@ public class OnlineGameView {
     }
 
     // =========================================================
-    // ОКНО РЕЗУЛЬТАТА
+    // ОКНО РЕЗУЛЬТАТА СО ЗВУКАМИ
     // =========================================================
     private void showResultDialog(String title, String message, String emoji) {
         gameOver = true;
         myTurn = false;
+
+        System.out.println("[ONLINE GAME] Showing result dialog: " + title);
+
+        // Воспроизводим соответствующий звук
+        Platform.runLater(() -> {
+            if (title.equals("ПОБЕДА!")) {
+                System.out.println("[ONLINE GAME] Playing win sound");
+                AudioManager.playWinSound();
+            } else if (title.equals("ПОРАЖЕНИЕ!")) {
+                System.out.println("[ONLINE GAME] Playing lose sound");
+                AudioManager.playLoseSound();
+            } else if (title.equals("НИЧЬЯ!")) {
+                System.out.println("[ONLINE GAME] Playing draw sound");
+                AudioManager.playDrawSound();
+            } else if (title.equals("СОПЕРНИК ВЫШЕЛ")) {
+                System.out.println("[ONLINE GAME] Playing message sound for opponent left");
+                AudioManager.playMessageSound();
+            }
+        });
 
         VBox dialogBox = new VBox(12);
         dialogBox.setAlignment(Pos.CENTER);
@@ -500,7 +799,6 @@ public class OnlineGameView {
             Platform.runLater(() -> {
                 Stage stage = ScreenManager.getStage();
                 if (stage != null) {
-                    // НЕ выключаем полноэкранный режим!
                     stage.setScene(new GameView().createScene());
                 }
             });
@@ -605,6 +903,12 @@ public class OnlineGameView {
         if (gameOver) return;
 
         System.out.println("OnlineGameView received: " + msg);
+
+        // Обработка чат сообщений от сервера
+        if (msg.startsWith("[Общий]") || msg.startsWith("[ЛС]") || msg.startsWith("[ВЫ ->")) {
+            addChatMessage(msg);
+            return;
+        }
 
         // Обновление счёта
         updateScoreFromMessage(msg);
