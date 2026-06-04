@@ -180,7 +180,7 @@ public class OnlineGameView {
         ));
 
         back.setOnAction(e -> {
-            showConfirmDialog("Выход", "Вы уверены?", "", "❓");
+            showConfirmDialog("Выход", "Вы уверены?", "Вы действительно хотите выйти из игры?", "❓");
         });
 
         // =========================================================
@@ -246,13 +246,8 @@ public class OnlineGameView {
         client.send("MODE " + size);
         client.send("READY");
 
-        // Включаем полноэкранный режим
-        Platform.runLater(() -> {
-            ScreenManager.startFullscreen();
-            if (ScreenManager.getStage() != null && !ScreenManager.getStage().isFullScreen()) {
-                ScreenManager.getStage().setFullScreen(true);
-            }
-        });
+        // Восстанавливаем полноэкранный режим из настроек
+        ScreenManager.restoreFullscreen();
 
         return scene;
     }
@@ -408,7 +403,7 @@ public class OnlineGameView {
             Platform.runLater(() -> {
                 Stage stage = ScreenManager.getStage();
                 if (stage != null) {
-                    stage.setFullScreen(false);
+                    // НЕ выключаем полноэкранный режим!
                     stage.setScene(new GameView().createScene());
                 }
             });
@@ -505,7 +500,7 @@ public class OnlineGameView {
             Platform.runLater(() -> {
                 Stage stage = ScreenManager.getStage();
                 if (stage != null) {
-                    stage.setFullScreen(false);
+                    // НЕ выключаем полноэкранный режим!
                     stage.setScene(new GameView().createScene());
                 }
             });

@@ -1,6 +1,22 @@
 package view;
 
-import controller.MainMenuController;import config.UIConfig;import javafx.scene.Scene;import javafx.scene.Group;import javafx.scene.Node;import javafx.scene.control.Button;import javafx.scene.image.Image;import javafx.scene.image.ImageView;import javafx.scene.layout.AnchorPane;import javafx.scene.layout.StackPane;import javafx.stage.Stage;import manager.AudioManager;import view.panels.RulesPanel;import view.panels.SettingsPanel;import view.panels.ShopPanel;
+import controller.MainMenuController;
+import config.UIConfig;
+import javafx.application.Platform;
+import javafx.scene.Scene;
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
+import manager.AudioManager;
+import manager.ScreenManager;
+import view.panels.RulesPanel;
+import view.panels.SettingsPanel;
+import view.panels.ShopPanel;
 
 public class MainMenuView {
 
@@ -99,6 +115,9 @@ public class MainMenuView {
 
         AudioManager.playMusic("/audio/fff.mp3");
 
+        // Восстанавливаем полноэкранный режим из настроек
+        ScreenManager.restoreFullscreen();
+
         return scene;
     }
 
@@ -193,5 +212,4 @@ public class MainMenuView {
         scaleContainer.setScaleX(scale);
         scaleContainer.setScaleY(scale);
     }
-
 }
