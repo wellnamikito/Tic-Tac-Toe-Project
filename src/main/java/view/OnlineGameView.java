@@ -1,6 +1,7 @@
 package view;
 
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -14,11 +15,9 @@ public class OnlineGameView {
 
     private Button[][] cells;
     private char[][] board;
-
     private int size;
     private boolean myTurn = false;
     private boolean gameOver = false;
-
     private TCPClient client;
     private char mySymbol = 'X';
 
@@ -36,25 +35,19 @@ public class OnlineGameView {
     private ToggleButton chatPrivateButton;
     private boolean isChatAll = true;
     private String opponentNickname = "СОПЕРНИК";
-
-    // Компоненты для сворачивания чата
     private VBox chatPanel;
     private Button toggleChatButton;
     private boolean isChatExpanded = true;
-    private HBox centerArea;
 
     // Компоненты для перезапуска
     private BorderPane root;
     private GridPane grid;
     private StackPane overlayPane;
     private ScrollPane scrollPane;
-    private Region spacerLeft;
-    private Region spacerRight;
 
     public OnlineGameView(TCPClient client, int size) {
         this.client = client;
         this.size = size;
-        // Проверяем наличие звуковых файлов
         AudioManager.checkSoundFiles();
     }
 
@@ -71,12 +64,11 @@ public class OnlineGameView {
         // =========================================================
         HBox topPanel = new HBox(30);
         topPanel.setAlignment(Pos.CENTER);
-        topPanel.getStyleClass().add("top-panel");
+        topPanel.setStyle("-fx-padding: 20; -fx-background-color: rgba(139, 90, 43, 0.3);");
 
         // Панель игрока
         VBox playerPanel = new VBox(8);
         playerPanel.setAlignment(Pos.CENTER);
-        playerPanel.getStyleClass().add("player-panel");
 
         Label playerAvatar = new Label("👤");
         playerAvatar.setStyle(
@@ -92,31 +84,32 @@ public class OnlineGameView {
         );
 
         Label playerName = new Label("ВЫ");
-        playerName.getStyleClass().add("player-name");
+        playerName.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #5C3317;");
 
         playerScoreLabel = new Label("0");
-        playerScoreLabel.getStyleClass().add("score-text");
+        playerScoreLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;");
 
         playerPanel.getChildren().addAll(playerAvatar, playerName, playerScoreLabel);
 
-        // Разделитель VS (только текст)
-        Label vsLabel = new Label("VS");
-        vsLabel.setStyle(
-                "-fx-text-fill: #8B5A2B;" +
-                        "-fx-font-size: 24px;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-font-family: 'Segoe UI';" +
-                        "-fx-background-color: transparent;"
-        );
+        // Разделитель VS
+        VBox vsPanel = new VBox(5);
+        vsPanel.setAlignment(Pos.CENTER);
+
+        Label vsText = new Label("VS");
+        vsText.setStyle("-fx-text-fill: #8B5A2B; -fx-font-size: 28px; -fx-font-weight: bold;");
+
+        Label onlineIcon = new Label("🌐");
+        onlineIcon.setStyle("-fx-font-size: 24px;");
+
+        vsPanel.getChildren().addAll(vsText, onlineIcon);
 
         // Панель соперника
         VBox opponentPanel = new VBox(8);
         opponentPanel.setAlignment(Pos.CENTER);
-        opponentPanel.getStyleClass().add("player-panel");
 
         Label opponentAvatar = new Label("👥");
         opponentAvatar.setStyle(
-                "-fx-font-size: 36px;" +
+                "-fx-font-size: 32px;" +
                         "-fx-font-weight: bold;" +
                         "-fx-text-fill: #3498db;" +
                         "-fx-background-color: rgba(52, 152, 219, 0.2);" +
@@ -128,14 +121,14 @@ public class OnlineGameView {
         );
 
         Label opponentName = new Label("СОПЕРНИК");
-        opponentName.getStyleClass().add("bot-name");
+        opponentName.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #5C3317;");
 
         opponentScoreLabel = new Label("0");
-        opponentScoreLabel.getStyleClass().add("score-text");
+        opponentScoreLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #3498db;");
 
         opponentPanel.getChildren().addAll(opponentAvatar, opponentName, opponentScoreLabel);
 
-        topPanel.getChildren().addAll(playerPanel, vsLabel, opponentPanel);
+        topPanel.getChildren().addAll(playerPanel, vsPanel, opponentPanel);
 
         // =========================================================
         // НИЖНЯЯ ПАНЕЛЬ (информация о ходе)
@@ -203,22 +196,16 @@ public class OnlineGameView {
         topContainer.getChildren().add(topPanel);
         topContainer.getChildren().add(back);
         StackPane.setAlignment(back, Pos.TOP_LEFT);
-        StackPane.setMargin(back, new javafx.geometry.Insets(40, 0, 0, 85));
+        StackPane.setMargin(back, new Insets(40, 0, 0, 85));
 
         // =========================================================
-        // ИГРОВОЕ ПОЛЕ И ЧАТ (с фиксированным центром)
+        // ИГРОВОЕ ПОЛЕ
         // =========================================================
-        centerArea = new HBox(20);
-        centerArea.setAlignment(Pos.CENTER);
-        centerArea.setPadding(new javafx.geometry.Insets(20));
-
-        // Игровое поле - фиксированный контейнер
-        StackPane gameContainer = new StackPane();
-        gameContainer.setAlignment(Pos.CENTER);
-
         grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
-        grid.getStyleClass().add("grid-pane");
+        grid.setHgap(5);
+        grid.setVgap(5);
+        grid.setPadding(new Insets(20));
 
         initGameBoard();
 
@@ -235,24 +222,14 @@ public class OnlineGameView {
         );
         scrollPane.getStyleClass().add("custom-scroll-pane");
 
-        gameContainer.getChildren().add(scrollPane);
-
-        // Создаём панель чата
+        // =========================================================
+        // ПАНЕЛЬ ЧАТА
+        // =========================================================
         createChatPanel();
 
-        // Создаём спейсеры для центрирования игрового поля
-        spacerLeft = new Region();
-        spacerRight = new Region();
-        HBox.setHgrow(spacerLeft, Priority.ALWAYS);
-        HBox.setHgrow(spacerRight, Priority.ALWAYS);
-
-        // Добавляем элементы в центр с выравниванием
-        centerArea.getChildren().addAll(spacerLeft, gameContainer, spacerRight);
-
-        // Кнопка чата в правом верхнем углу
         VBox chatButtonContainer = new VBox();
         chatButtonContainer.setAlignment(Pos.TOP_RIGHT);
-        chatButtonContainer.setPadding(new javafx.geometry.Insets(0, 20, 0, 0));
+        chatButtonContainer.setPadding(new Insets(0, 20, 0, 0));
 
         toggleChatButton = new Button("📨");
         toggleChatButton.setStyle(
@@ -266,63 +243,46 @@ public class OnlineGameView {
                         "-fx-min-width: 45;" +
                         "-fx-min-height: 45;"
         );
-        toggleChatButton.setOnMouseEntered(e -> toggleChatButton.setStyle(
-                "-fx-background-color: #A0522D;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-font-size: 20px;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-background-radius: 15;" +
-                        "-fx-padding: 8 12;" +
-                        "-fx-cursor: hand;"
-        ));
-        toggleChatButton.setOnMouseExited(e -> toggleChatButton.setStyle(
-                "-fx-background-color: #8B5A2B;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-font-size: 20px;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-background-radius: 15;" +
-                        "-fx-padding: 8 12;" +
-                        "-fx-cursor: hand;"
-        ));
         toggleChatButton.setOnAction(e -> toggleChat());
 
         chatButtonContainer.getChildren().add(toggleChatButton);
 
-        // Создаём контейнер для чата и кнопки
         VBox chatContainer = new VBox(10);
         chatContainer.setAlignment(Pos.TOP_RIGHT);
         chatContainer.getChildren().addAll(chatButtonContainer, chatPanel);
 
-        // Слой для чата поверх всего
-        StackPane mainContainer = new StackPane();
-        mainContainer.getChildren().addAll(centerArea, chatContainer);
-        StackPane.setAlignment(chatContainer, Pos.TOP_RIGHT);
+        // =========================================================
+        // СБОРКА
+        // =========================================================
+        HBox mainLayout = new HBox(20);
+        mainLayout.setAlignment(Pos.CENTER);
+        mainLayout.setPadding(new Insets(20));
+        mainLayout.getChildren().addAll(scrollPane, chatContainer);
+        HBox.setHgrow(scrollPane, Priority.ALWAYS);
 
         overlayPane = new StackPane();
         overlayPane.setAlignment(Pos.CENTER);
         overlayPane.setVisible(false);
 
         StackPane gameArea = new StackPane();
-        gameArea.getChildren().addAll(mainContainer, overlayPane);
+        gameArea.getChildren().addAll(mainLayout, overlayPane);
         gameArea.setAlignment(Pos.CENTER);
 
-        // Собираем всё вместе
         root.setTop(topContainer);
         root.setCenter(gameArea);
         root.setBottom(bottomPanel);
 
-        BorderPane.setMargin(topContainer, new javafx.geometry.Insets(10, 20, 10, 20));
-        BorderPane.setMargin(bottomPanel, new javafx.geometry.Insets(0, 20, 20, 20));
+        BorderPane.setMargin(topContainer, new Insets(10, 20, 10, 20));
+        BorderPane.setMargin(bottomPanel, new Insets(0, 20, 20, 20));
 
-        Scene scene = new Scene(root, 800, 800);
+        Scene scene = new Scene(root, 900, 800);
         scene.getStylesheets().add(getClass().getResource("/css/game.css").toExternalForm());
 
-        // ПРАВИЛЬНЫЙ HANDSHAKE
+        // Отправляем данные на сервер
         client.send("NICK player");
         client.send("MODE " + size);
         client.send("READY");
 
-        // Восстанавливаем полноэкранный режим из настроек
         ScreenManager.restoreFullscreen();
 
         return scene;
@@ -418,33 +378,7 @@ public class OnlineGameView {
         chatInput.setOnAction(e -> sendChatMessage());
 
         Button sendButton = new Button("📤 Отправить");
-        sendButton.setStyle(
-                "-fx-background-color: #8B5A2B;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-font-size: 12px;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-padding: 8 15;" +
-                        "-fx-cursor: hand;"
-        );
-        sendButton.setOnMouseEntered(e -> sendButton.setStyle(
-                "-fx-background-color: #A0522D;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-font-size: 12px;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-padding: 8 15;" +
-                        "-fx-cursor: hand;"
-        ));
-        sendButton.setOnMouseExited(e -> sendButton.setStyle(
-                "-fx-background-color: #8B5A2B;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-font-size: 12px;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-padding: 8 15;" +
-                        "-fx-cursor: hand;"
-        ));
+        sendButton.setStyle(buttonStyle);
         sendButton.setOnAction(e -> sendChatMessage());
 
         HBox inputBox = new HBox(10);
@@ -458,50 +392,25 @@ public class OnlineGameView {
     // =========================================================
     private void toggleChat() {
         if (isChatExpanded) {
-            // Сворачиваем чат
             chatPanel.setVisible(false);
             chatPanel.setManaged(false);
             toggleChatButton.setText("📩");
-            toggleChatButton.setStyle(
-                    "-fx-background-color: #8B5A2B;" +
-                            "-fx-text-fill: white;" +
-                            "-fx-font-size: 20px;" +
-                            "-fx-font-weight: bold;" +
-                            "-fx-background-radius: 15;" +
-                            "-fx-padding: 8 12;" +
-                            "-fx-cursor: hand;" +
-                            "-fx-min-width: 45;" +
-                            "-fx-min-height: 45;"
-            );
             isChatExpanded = false;
         } else {
-            // Разворачиваем чат
             chatPanel.setVisible(true);
             chatPanel.setManaged(true);
             toggleChatButton.setText("📨");
-            toggleChatButton.setStyle(
-                    "-fx-background-color: #8B5A2B;" +
-                            "-fx-text-fill: white;" +
-                            "-fx-font-size: 20px;" +
-                            "-fx-font-weight: bold;" +
-                            "-fx-background-radius: 15;" +
-                            "-fx-padding: 8 12;" +
-                            "-fx-cursor: hand;" +
-                            "-fx-min-width: 45;" +
-                            "-fx-min-height: 45;"
-            );
             isChatExpanded = true;
         }
     }
 
     // =========================================================
-    // ОТПРАВКА СООБЩЕНИЯ В ЧАТ СО ЗВУКОМ
+    // ОТПРАВКА СООБЩЕНИЯ В ЧАТ
     // =========================================================
     private void sendChatMessage() {
         String message = chatInput.getText().trim();
         if (message.isEmpty()) return;
 
-        // Воспроизводим звук отправки сообщения
         AudioManager.playMessageSound();
 
         if (isChatAll) {
@@ -516,14 +425,12 @@ public class OnlineGameView {
     }
 
     // =========================================================
-    // ДОБАВЛЕНИЕ СООБЩЕНИЯ В ЧАТ СО ЗВУКОМ
+    // ДОБАВЛЕНИЕ СООБЩЕНИЯ В ЧАТ
     // =========================================================
     private void addChatMessage(String message) {
         Platform.runLater(() -> {
             chatArea.appendText(message + "\n");
             chatArea.setScrollTop(Double.MAX_VALUE);
-
-            // Воспроизводим звук получения сообщения (если сообщение не от нас)
             if (!message.startsWith("[ВЫ")) {
                 AudioManager.playMessageSound();
             }
@@ -531,7 +438,7 @@ public class OnlineGameView {
     }
 
     // =========================================================
-    // ИНИЦИАЛИЗАЦИЯ ИГРОВОГО ПОЛЯ
+    // ИНИЦИАЛИЗАЦИЯ ИГРОВОГО ПОЛЯ (ЛОГИКА ИЗ РАБОЧЕЙ ВЕРСИИ)
     // =========================================================
     private void initGameBoard() {
         grid.getChildren().clear();
@@ -541,25 +448,35 @@ public class OnlineGameView {
 
         for (int r = 0; r < size; r++) {
             for (int c = 0; c < size; c++) {
-
-                board[r][c] = ' ';
+                // ВАЖНО: инициализируем '_' как в рабочей версии
+                board[r][c] = '_';
 
                 Button cell = new Button();
-                cell.setPrefSize(100, 100);
-                cell.getStyleClass().add("cell");
+                if (size == 3) {
+                    cell.setPrefSize(100, 100);
+                } else {
+                    cell.setPrefSize(70, 70);
+                }
+                cell.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-background-color: #f0f0f0; -fx-border-color: #8B5A2B; -fx-border-width: 2;");
 
-                int rr = r;
-                int cc = c;
+                int row = r;
+                int col = c;
 
                 cell.setOnAction(e -> {
+                    // ЛОГИКА ИЗ РАБОЧЕЙ ВЕРСИИ
                     if (gameOver) return;
                     if (!myTurn) return;
-                    if (board[rr][cc] != ' ') return;
 
-                    // Воспроизводим звук хода при клике
+                    // ПРОВЕРКА из рабочей версии: клетка пуста если символ '_'
+                    if (board[row][col] != '_') {
+                        return;
+                    }
+
                     AudioManager.playMoveSound();
+                    client.send("MOVE " + row + " " + col);
 
-                    client.send("MOVE " + rr + " " + cc);
+                    myTurn = false;
+                    updateTurnLabel();
                 });
 
                 cells[r][c] = cell;
@@ -703,27 +620,20 @@ public class OnlineGameView {
     }
 
     // =========================================================
-    // ОКНО РЕЗУЛЬТАТА СО ЗВУКАМИ
+    // ОКНО РЕЗУЛЬТАТА
     // =========================================================
     private void showResultDialog(String title, String message, String emoji) {
         gameOver = true;
         myTurn = false;
 
-        System.out.println("[ONLINE GAME] Showing result dialog: " + title);
-
-        // Воспроизводим соответствующий звук
         Platform.runLater(() -> {
             if (title.equals("ПОБЕДА!")) {
-                System.out.println("[ONLINE GAME] Playing win sound");
                 AudioManager.playWinSound();
             } else if (title.equals("ПОРАЖЕНИЕ!")) {
-                System.out.println("[ONLINE GAME] Playing lose sound");
                 AudioManager.playLoseSound();
             } else if (title.equals("НИЧЬЯ!")) {
-                System.out.println("[ONLINE GAME] Playing draw sound");
                 AudioManager.playDrawSound();
             } else if (title.equals("СОПЕРНИК ВЫШЕЛ")) {
-                System.out.println("[ONLINE GAME] Playing message sound for opponent left");
                 AudioManager.playMessageSound();
             }
         });
@@ -828,7 +738,7 @@ public class OnlineGameView {
     // =========================================================
     private void updateTurnLabel() {
         Platform.runLater(() -> {
-            if (myTurn) {
+            if (myTurn && !gameOver) {
                 turnLabel.setText("🔥 ВАШ ХОД! 🔥");
                 turnLabel.setStyle(
                         "-fx-text-fill: #FFD700;" +
@@ -836,7 +746,7 @@ public class OnlineGameView {
                                 "-fx-font-weight: bold;" +
                                 "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 5, 0.1, 0, 2);"
                 );
-            } else {
+            } else if (!gameOver) {
                 turnLabel.setText("⏳ ХОД СОПЕРНИКА... ⏳");
                 turnLabel.setStyle(
                         "-fx-text-fill: #FFFFFF;" +
@@ -848,7 +758,7 @@ public class OnlineGameView {
     }
 
     // =========================================================
-    // ОБНОВЛЕНИЕ ДОСКИ
+    // ОБНОВЛЕНИЕ ДОСКИ (ЛОГИКА ИЗ РАБОЧЕЙ ВЕРСИИ)
     // =========================================================
     private void updateBoard(String data) {
         Platform.runLater(() -> {
@@ -857,20 +767,18 @@ public class OnlineGameView {
                     int index = r * size + c;
                     if (index >= data.length()) return;
                     char ch = data.charAt(index);
+                    // СОХРАНЯЕМ ТО, ЧТО ПРИСЛАЛ СЕРВЕР (как в рабочей версии)
                     board[r][c] = ch;
 
                     if (ch == '_') {
                         cells[r][c].setText("");
-                        cells[r][c].getStyleClass().removeAll("cell-x", "cell-o");
-                        cells[r][c].getStyleClass().add("cell");
+                        cells[r][c].setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-background-color: #f0f0f0; -fx-border-color: #8B5A2B; -fx-border-width: 2;");
                     } else {
                         cells[r][c].setText(String.valueOf(ch));
                         if (ch == 'X') {
-                            cells[r][c].getStyleClass().add("cell-x");
-                            cells[r][c].getStyleClass().remove("cell-o");
+                            cells[r][c].setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: red; -fx-background-color: #ffe0e0; -fx-border-color: #8B5A2B; -fx-border-width: 2;");
                         } else if (ch == 'O') {
-                            cells[r][c].getStyleClass().add("cell-o");
-                            cells[r][c].getStyleClass().remove("cell-x");
+                            cells[r][c].setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: blue; -fx-background-color: #e0e0ff; -fx-border-color: #8B5A2B; -fx-border-width: 2;");
                         }
                     }
                 }
@@ -879,48 +787,30 @@ public class OnlineGameView {
     }
 
     // =========================================================
-    // ОБНОВЛЕНИЕ СЧЁТА ИЗ СООБЩЕНИЯ
-    // =========================================================
-    private void updateScoreFromMessage(String msg) {
-        if (msg.startsWith("SCORE")) {
-            String[] parts = msg.split(" ");
-            if (parts.length >= 3) {
-                try {
-                    playerScore = Integer.parseInt(parts[1]);
-                    opponentScore = Integer.parseInt(parts[2]);
-                    updateScores();
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    // =========================================================
     // ОБРАБОТКА СООБЩЕНИЙ ОТ СЕРВЕРА
     // =========================================================
     public void handleServer(String msg) {
-        if (gameOver) return;
-
         System.out.println("OnlineGameView received: " + msg);
 
-        // Обработка чат сообщений от сервера
         if (msg.startsWith("[Общий]") || msg.startsWith("[ЛС]") || msg.startsWith("[ВЫ ->")) {
             addChatMessage(msg);
             return;
         }
 
-        // Обновление счёта
-        updateScoreFromMessage(msg);
+        if (msg.equals("START")) {
+            gameOver = false;
+            Platform.runLater(() -> {
+                turnLabel.setText("Игра началась!");
+            });
+            return;
+        }
 
-        // ================= ROLE =================
         if (msg.startsWith("ROLE")) {
             mySymbol = msg.contains("X") ? 'X' : 'O';
             System.out.println("My symbol: " + mySymbol);
             return;
         }
 
-        // ================= STATE =================
         if (msg.startsWith("STATE")) {
             String[] parts = msg.split(" ");
             if (parts.length >= 3) {
@@ -929,7 +819,6 @@ public class OnlineGameView {
             return;
         }
 
-        // ================= TURN =================
         if (msg.equals("TURN YOUR")) {
             myTurn = true;
             updateTurnLabel();
@@ -942,8 +831,7 @@ public class OnlineGameView {
             return;
         }
 
-        // ================= WIN/LOSS =================
-        if (msg.startsWith("WIN")) {
+        if (msg.equals("WIN")) {
             playerScore++;
             updateScores();
             showResultDialog("ПОБЕДА!", "Вы выиграли игру! 🎉", "🏆");
@@ -951,7 +839,7 @@ public class OnlineGameView {
             return;
         }
 
-        if (msg.startsWith("LOSE")) {
+        if (msg.equals("LOSE")) {
             opponentScore++;
             updateScores();
             showResultDialog("ПОРАЖЕНИЕ!", "Вы проиграли... 💀", "😞");
@@ -959,7 +847,7 @@ public class OnlineGameView {
             return;
         }
 
-        if (msg.startsWith("DRAW")) {
+        if (msg.equals("DRAW")) {
             showResultDialog("НИЧЬЯ!", "Ничья! 🤝", "🤝");
             client.close();
             return;
@@ -968,6 +856,24 @@ public class OnlineGameView {
         if (msg.equals("OPPONENT_LEFT")) {
             showResultDialog("СОПЕРНИК ВЫШЕЛ", "Соперник покинул игру", "👋");
             client.close();
+            return;
+        }
+
+        if (msg.equals("NOT YOUR TURN")) {
+            myTurn = false;
+            updateTurnLabel();
+            Platform.runLater(() -> {
+                turnLabel.setText("❌ СЕЙЧАС НЕ ВАШ ХОД! ❌");
+            });
+            return;
+        }
+
+        if (msg.equals("INVALID")) {
+            myTurn = true;
+            updateTurnLabel();
+            Platform.runLater(() -> {
+                turnLabel.setText("❌ НЕВЕРНЫЙ ХОД! Попробуйте другую клетку ❌");
+            });
             return;
         }
     }
